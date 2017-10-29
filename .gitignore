@@ -1,0 +1,5 @@
+build/
+result
+*.o
+encrypt
+compile_commands.json
