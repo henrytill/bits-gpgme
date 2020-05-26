@@ -1,6 +1,5 @@
+PREFIX      = /usr/local
 PROJECT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-
-PREFIX := $(out)
 
 override CFLAGS  += -std=c99 -Wall -Werror -Wextra -Wpedantic
 override CFLAGS  += $(shell gpgme-config --cflags)

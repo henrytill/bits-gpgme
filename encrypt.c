@@ -1,6 +1,8 @@
 #include <locale.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <gpgme.h>
 
@@ -8,6 +10,8 @@
 
 /* The contents of argv[0] */
 static char *executable_name = NULL;
+
+#define EMPTY_STRING ""
 
 #define GPGME_FAILURE(ctx, err, msg)                                           \
 	do {                                                                   \
@@ -23,7 +27,8 @@ static char *executable_name = NULL;
 		exit(1);                                                       \
 	} while (0)
 
-/* Initializes GPGME based on the given protocol type
+/*
+ * Initializes GPGME based on the given protocol type
  *
  * https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
  */
@@ -41,20 +46,25 @@ init_gpgme(gpgme_protocol_t proto)
 	return gpgme_engine_check_version(proto);
 }
 
-/* Prints keyid, name, and email of given key */
+/*
+ * Prints keyid, name, and email of given key
+ */
 void
 print_key_info(gpgme_key_t key)
 {
 	/* Print keyid  */
 	printf("%s:", key->subkeys->keyid);
+
 	/* Print name */
 	if (key->uids && key->uids->name) {
 		printf(" %s", key->uids->name);
 	}
+
 	/* Print email */
-	if (key->uids && key->uids->email) {
+	if (key->uids && (strcmp(key->uids->email, EMPTY_STRING) != 0)) {
 		printf(" <%s>", key->uids->email);
 	}
+
 	putchar('\n');
 }
 
@@ -79,13 +89,13 @@ main(int argc, char *argv[])
 	}
 
 	/* Fetch key and print its information */
-	if ((err = gpgme_get_key(ctx, FINGERPRINT, &key, 0)) != 0) {
+	if ((err = gpgme_get_key(ctx, FINGERPRINT, &key, true)) != 0) {
 		GPGME_FAILURE(ctx, err, "could not fetch key");
 	}
 	print_key_info(key);
 
 	/* Turn on ASCII-armored output */
-	gpgme_set_armor(ctx, 0);
+	gpgme_set_armor(ctx, true);
 
 	gpgme_release(ctx);
 
