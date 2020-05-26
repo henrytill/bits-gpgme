@@ -69,20 +69,17 @@ main(int argc, char *argv[])
 	executable_name = argv[0];
 
 	/* Initialize */
-	err = init_gpgme(GPGME_PROTOCOL_OPENPGP);
-	if (err) {
+	if ((err = init_gpgme(GPGME_PROTOCOL_OPENPGP)) != 0) {
 		GPGME_FAILURE(NULL, err, "could not initialize engine");
 	}
 
 	/* Create new context */
-	err = gpgme_new(&ctx);
-	if (err) {
+	if ((err = gpgme_new(&ctx)) != 0) {
 		GPGME_FAILURE(ctx, err, "could not create context");
 	}
 
 	/* Fetch key and print its information */
-	err = gpgme_get_key(ctx, FINGERPRINT, &key, 0);
-	if (err) {
+	if ((err = gpgme_get_key(ctx, FINGERPRINT, &key, 0)) != 0) {
 		GPGME_FAILURE(ctx, err, "could not fetch key");
 	}
 	print_key_info(key);
