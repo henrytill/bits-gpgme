@@ -1,5 +1,6 @@
 *.o
 encrypt
 compile_commands.json
-/example/gnupg/private-keys-v1.d
 /example/gnupg/.gpg-v21-migrated
+/example/gnupg/private-keys-v1.d
+/example/gnupg/random_seed

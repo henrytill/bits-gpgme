@@ -1,7 +1,9 @@
+AlignAfterOpenBracket: Align
 AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
 AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
 AllowShortIfStatementsOnASingleLine: Never
-AlwaysBreakAfterDefinitionReturnType: All
 AlwaysBreakAfterReturnType: All
 BasedOnStyle: LLVM
 BinPackArguments: false
