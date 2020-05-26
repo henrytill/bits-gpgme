@@ -14,9 +14,9 @@ encrypt.o: encrypt.c Makefile
 encrypt: encrypt.o
 	$(CC) -o $@ $< $(LDFLAGS)
 
-.PHONY: test
-test: export GNUPGHOME = $(PROJECT_DIR)/example/gnupg
-test: encrypt
+.PHONY: check
+check: export GNUPGHOME = $(PROJECT_DIR)/example/gnupg
+check: encrypt
 	./$<
 
 .PHONY: install
