@@ -5,14 +5,22 @@ override CFLAGS  += -std=c99 -Wall -Werror -Wextra -Wpedantic -g
 override CFLAGS  += $(shell gpgme-config --cflags)
 override LDFLAGS += $(shell gpgme-config --libs)
 
+SRC = encrypt.c util.c
+OBJ = $(SRC:.c=.o)
+
 .PHONY: all
 all: encrypt
 
-encrypt.o: encrypt.c Makefile
+$(OBJ): config.h util.h Makefile
+
+.c.o:
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-encrypt: encrypt.o
-	$(CC) -o $@ $< $(LDFLAGS)
+encrypt: $(OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+compile_commands.json: clean Makefile
+	bear make
 
 .PHONY: check
 check: export GNUPGHOME = $(PROJECT_DIR)/example/gnupg
@@ -24,7 +32,6 @@ install: encrypt
 	mkdir -p $(PREFIX)/bin
 	install $< $(PREFIX)/bin/$<
 
-.PHONY: clean
 clean:
 	rm -f encrypt
-	rm -f encrypt.o
+	rm -f $(OBJ)
