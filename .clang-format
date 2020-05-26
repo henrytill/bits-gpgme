@@ -1,6 +1,6 @@
 AlignConsecutiveDeclarations: true
 AlignTrailingComments: true
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AlwaysBreakAfterDefinitionReturnType: All
 AlwaysBreakAfterReturnType: All
 BasedOnStyle: LLVM
