@@ -10,11 +10,12 @@
 int
 main(int argc, char *argv[])
 {
-	gpgme_error_t err;
-	gpgme_ctx_t   ctx;
-	gpgme_key_t   keys[KEYS_LEN];
-	gpgme_data_t  in;
-	gpgme_data_t  out;
+	gpgme_error_t         err;
+	gpgme_ctx_t           ctx;
+	gpgme_key_t           keys[KEYS_LEN];
+	gpgme_data_t          in;
+	gpgme_data_t          out;
+	gpgme_encrypt_flags_t flags;
 
 	(void)argc;
 	executable_name = argv[0];
@@ -30,10 +31,10 @@ main(int argc, char *argv[])
 	}
 
 	/* Fetch key and print its information */
-	if ((err = gpgme_get_key(ctx, FINGERPRINT, &keys[0], true)) != 0) {
+	if ((err = gpgme_get_key(ctx, FINGERPRINT, &keys[KEY], true)) != 0) {
 		gpgme_failure(ctx, err, FAILURE_MSG_GET_KEY);
 	}
-	keys[1] = NULL;
+	keys[END] = NULL;
 
 #ifdef NDEBUG
 	print_key_info(keys[0]);
@@ -56,8 +57,8 @@ main(int argc, char *argv[])
 	}
 
 	/* Encrypt */
-	if ((err = gpgme_op_encrypt(
-	         ctx, keys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out)) != 0) {
+	flags = GPGME_ENCRYPT_ALWAYS_TRUST;
+	if ((err = gpgme_op_encrypt(ctx, keys, flags, in, out)) != 0) {
 		gpgme_data_release(in);
 		gpgme_data_release(out);
 		gpgme_failure(ctx, err, FAILURE_MSG_ENCRYPT);

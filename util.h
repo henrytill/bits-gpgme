@@ -19,6 +19,9 @@ static char *executable_name = NULL;
 /* NULL-terminated array of length 1 */
 #define KEYS_LEN 2
 
+/* Constants for accessing keys */
+enum { KEY = 0, END = 1 };
+
 /* Size of buffer for printing data */
 #define BUF_LEN 512
 
