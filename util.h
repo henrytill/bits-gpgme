@@ -26,7 +26,7 @@ enum { KEY = 0, END = 1 };
 #define BUF_LEN 512
 
 /* Prints well-formatted error, releases context, and exits */
-#define gpgme_failure(ctx, err, msg)                                           \
+#define util_gpgme_failure(ctx, err, msg)                                      \
 	do {                                                                   \
 		fprintf(stderr,                                                \
 		        "%s: %s: %s: %s\n",                                    \
@@ -46,18 +46,18 @@ enum { KEY = 0, END = 1 };
  * https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
  */
 gpgme_error_t
-init_gpgme(gpgme_protocol_t proto);
+util_gpgme_init(gpgme_protocol_t proto);
 
 /*
  * Prints keyid, name, and email of given key
  */
 void
-print_key_info(gpgme_key_t key);
+util_gpgme_print_key(gpgme_key_t key);
 
 /*
  * Prints data
  */
 void
-print_data(gpgme_ctx_t ctx, gpgme_data_t data);
+util_gpgme_print_data(gpgme_ctx_t ctx, gpgme_data_t data);
 
 #endif

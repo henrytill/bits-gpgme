@@ -1,7 +1,7 @@
 PREFIX      = /usr/local
 PROJECT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-override CFLAGS  += -std=c99 -Wall -Werror -Wextra -Wpedantic -g
+override CFLAGS  += -std=c99 -Wall -Werror -Wextra -Wpedantic
 override CFLAGS  += $(shell gpgme-config --cflags)
 override LDFLAGS += $(shell gpgme-config --libs)
 
@@ -14,7 +14,12 @@ EXE         = encrypt decrypt
 .PHONY: all
 all: $(EXE)
 
+.PHONY: debug
+debug: CFLAGS += -DNDEBUG -g
+debug: all
+
 $(ENCRYPT_OBJ): config.h util.h Makefile
+
 $(DECRYPT_OBJ): config.h util.h Makefile
 
 .c.o:
@@ -33,11 +38,6 @@ compile_commands.json: clean
 check: export GNUPGHOME = $(PROJECT_DIR)/example/gnupg
 check: $(EXE)
 	./test.sh
-
-.PHONY: install
-install: encrypt
-	mkdir -p $(PREFIX)/bin
-	install $< $(PREFIX)/bin/$<
 
 .PHONY: clean
 clean:

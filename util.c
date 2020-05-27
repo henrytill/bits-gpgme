@@ -7,7 +7,7 @@
 #include "util.h"
 
 gpgme_error_t
-init_gpgme(gpgme_protocol_t proto)
+util_gpgme_init(gpgme_protocol_t proto)
 {
 	setlocale(LC_ALL, "");
 	gpgme_check_version(NULL);
@@ -21,7 +21,7 @@ init_gpgme(gpgme_protocol_t proto)
 }
 
 void
-print_key_info(gpgme_key_t key)
+util_gpgme_print_key(gpgme_key_t key)
 {
 	/* Print keyid  */
 	printf("%s:", key->subkeys->keyid);
@@ -40,7 +40,7 @@ print_key_info(gpgme_key_t key)
 }
 
 void
-print_data(gpgme_ctx_t ctx, gpgme_data_t data)
+util_gpgme_print_data(gpgme_ctx_t ctx, gpgme_data_t data)
 {
 	off_t         ret;
 	gpgme_error_t err;
@@ -48,7 +48,7 @@ print_data(gpgme_ctx_t ctx, gpgme_data_t data)
 
 	if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
 		err = gpgme_error_from_errno(ret);
-		gpgme_failure(ctx, err, "could not seek");
+		util_gpgme_failure(ctx, err, "could not seek");
 	}
 
 	while ((ret = gpgme_data_read(data, buf, BUF_LEN)) != 0) {
@@ -57,6 +57,6 @@ print_data(gpgme_ctx_t ctx, gpgme_data_t data)
 
 	if (ret != 0) {
 		err = gpgme_error_from_errno(ret);
-		gpgme_failure(ctx, err, "could not read");
+		util_gpgme_failure(ctx, err, "could not read");
 	}
 }
