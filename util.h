@@ -7,6 +7,18 @@ static char *executable_name = NULL;
 /* It must be done */
 #define EMPTY_STRING ""
 
+/* Failure messages */
+#define FAILURE_MSG_INIT       "could not initialize engine"
+#define FAILURE_MSG_NEW        "could not create context"
+#define FAILURE_MSG_GET_KEY    "could not fetch key"
+#define FAILURE_MSG_NEW_INPUT  "could not create input data"
+#define FAILURE_MSG_NEW_OUTPUT "could not create output data"
+#define FAILURE_MSG_ENCRYPT    "could not encrypt"
+#define FAILURE_MSG_DECRYPT    "could not decrypt"
+
+/* NULL-terminated array of length 1 */
+#define KEYS_LEN 2
+
 /* Size of buffer for printing data */
 #define BUF_LEN 512
 

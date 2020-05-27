@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include <gpgme.h>
@@ -39,28 +38,24 @@ main(int argc, char *argv[])
 	print_key_info(keys[0]);
 #endif
 
-	/* Turn on ASCII-armored output */
-	gpgme_set_armor(ctx, true);
-
 	/* Create input */
-	if ((err = gpgme_data_new_from_mem(&in, INPUT, INPUT_LEN, true)) != 0) {
+	if ((err = gpgme_data_new_from_stream(&in, stdin)) != 0) {
 		gpgme_data_release(in);
 		gpgme_failure(ctx, err, FAILURE_MSG_NEW_INPUT);
 	}
 
-	/* Create empty cipher */
+	/* Create empty output */
 	if ((err = gpgme_data_new(&out)) != 0) {
 		gpgme_data_release(in);
 		gpgme_data_release(out);
 		gpgme_failure(ctx, err, FAILURE_MSG_NEW_OUTPUT);
 	}
 
-	/* Encrypt */
-	if ((err = gpgme_op_encrypt(
-	         ctx, keys, GPGME_ENCRYPT_ALWAYS_TRUST, in, out)) != 0) {
+	/* Decrypt */
+	if ((err = gpgme_op_decrypt(ctx, in, out)) != 0) {
 		gpgme_data_release(in);
 		gpgme_data_release(out);
-		gpgme_failure(ctx, err, FAILURE_MSG_ENCRYPT);
+		gpgme_failure(ctx, err, FAILURE_MSG_DECRYPT);
 	}
 	print_data(ctx, out);
 

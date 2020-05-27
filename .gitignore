@@ -1,4 +1,5 @@
 *.o
+decrypt
 encrypt
 compile_commands.json
 /example/gnupg/.gpg-v21-migrated

@@ -5,33 +5,42 @@ override CFLAGS  += -std=c99 -Wall -Werror -Wextra -Wpedantic -g
 override CFLAGS  += $(shell gpgme-config --cflags)
 override LDFLAGS += $(shell gpgme-config --libs)
 
-SRC = encrypt.c util.c
-OBJ = $(SRC:.c=.o)
+ENCRYPT_SRC = encrypt.c util.c
+ENCRYPT_OBJ = $(ENCRYPT_SRC:.c=.o)
+DECRYPT_SRC = decrypt.c util.c
+DECRYPT_OBJ = $(DECRYPT_SRC:.c=.o)
+EXE         = encrypt decrypt
 
 .PHONY: all
-all: encrypt
+all: $(EXE)
 
-$(OBJ): config.h util.h Makefile
+$(ENCRYPT_OBJ): config.h util.h Makefile
+$(DECRYPT_OBJ): config.h util.h Makefile
 
 .c.o:
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-encrypt: $(OBJ)
+encrypt: $(ENCRYPT_OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-compile_commands.json: clean Makefile
+decrypt: $(DECRYPT_OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+compile_commands.json: clean
 	bear make
 
 .PHONY: check
 check: export GNUPGHOME = $(PROJECT_DIR)/example/gnupg
-check: encrypt
-	./$<
+check: $(EXE)
+	./test.sh
 
 .PHONY: install
 install: encrypt
 	mkdir -p $(PREFIX)/bin
 	install $< $(PREFIX)/bin/$<
 
+.PHONY: clean
 clean:
-	rm -f encrypt
-	rm -f $(OBJ)
+	rm -f $(EXE)
+	rm -f $(ENCRYPT_OBJ)
+	rm -f $(DECRYPT_OBJ)
