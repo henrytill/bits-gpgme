@@ -32,7 +32,7 @@ util_gpgme_print_key(gpgme_key_t key)
 	}
 
 	/* Print email */
-	if (key->uids && (strcmp(key->uids->email, EMPTY_STRING))) {
+	if (key->uids && (strcmp(key->uids->email, EMPTY_STRING) != 0)) {
 		printf(" <%s>", key->uids->email);
 	}
 
