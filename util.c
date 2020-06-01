@@ -32,7 +32,7 @@ util_gpgme_print_key(gpgme_key_t key)
 	}
 
 	/* Print email */
-	if (key->uids && (strcmp(key->uids->email, EMPTY_STRING) != 0)) {
+	if (key->uids && (strcmp(key->uids->email, EMPTY_STRING))) {
 		printf(" <%s>", key->uids->email);
 	}
 
@@ -46,16 +46,16 @@ util_gpgme_print_data(gpgme_ctx_t ctx, gpgme_data_t data)
 	gpgme_error_t err;
 	char          buf[BUF_LEN + 1];
 
-	if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
+	if ((ret = gpgme_data_seek(data, 0, SEEK_SET))) {
 		err = gpgme_error_from_errno(ret);
 		util_gpgme_failure(ctx, err, "could not seek");
 	}
 
-	while ((ret = gpgme_data_read(data, buf, BUF_LEN)) != 0) {
+	while ((ret = gpgme_data_read(data, buf, BUF_LEN))) {
 		fwrite(buf, ret, 1, stdout);
 	}
 
-	if (ret != 0) {
+	if (ret) {
 		err = gpgme_error_from_errno(ret);
 		util_gpgme_failure(ctx, err, "could not read");
 	}
