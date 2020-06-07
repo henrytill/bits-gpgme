@@ -28,7 +28,7 @@ enum { KEY = 0, END = 1 };
 #define BUF_LEN 512
 
 /* Prints well-formatted error, releases context, and exits */
-#define util_gpgme_failure(ctx, err, msg)                                      \
+#define util_gpgme_print_error(err, msg)                                       \
 	do {                                                                   \
 		fprintf(stderr,                                                \
 		        "%s: %s: %s: %s\n",                                    \
@@ -36,10 +36,6 @@ enum { KEY = 0, END = 1 };
 		        msg,                                                   \
 		        gpgme_strsource(err),                                  \
 		        gpgme_strerror(err));                                  \
-		if (ctx) {                                                     \
-			gpgme_release(ctx);                                    \
-		}                                                              \
-		exit(1);                                                       \
 	} while (0)
 
 /*
@@ -59,7 +55,7 @@ util_gpgme_print_key(gpgme_key_t key);
 /*
  * Prints data
  */
-void
-util_gpgme_print_data(gpgme_ctx_t ctx, gpgme_data_t data);
+int
+util_gpgme_print_data(gpgme_data_t data);
 
 #endif

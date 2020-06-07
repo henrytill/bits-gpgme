@@ -9,28 +9,31 @@ int
 main(int argc, char *argv[])
 {
 	gpgme_error_t         err;
-	gpgme_ctx_t           ctx;
+	gpgme_ctx_t           ctx = NULL;
 	gpgme_key_t           keys[KEYS_LEN];
-	gpgme_data_t          in;
-	gpgme_data_t          out;
+	gpgme_data_t          in = NULL;
+	gpgme_data_t          out = NULL;
 	gpgme_encrypt_flags_t flags;
 
 	(void)argc;
 	executable_name = argv[0];
 
 	/* Initialize */
-	if ((err = util_gpgme_init(GPGME_PROTOCOL_OPENPGP))) {
-		util_gpgme_failure(NULL, err, FAILURE_MSG_INIT);
+	if ((err = util_gpgme_init(GPGME_PROTOCOL_OPENPGP)) != 0) {
+		util_gpgme_print_error(err, FAILURE_MSG_INIT);
+		goto fail;
 	}
 
 	/* Create new context */
-	if ((err = gpgme_new(&ctx))) {
-		util_gpgme_failure(ctx, err, FAILURE_MSG_NEW);
+	if ((err = gpgme_new(&ctx)) != 0) {
+		util_gpgme_print_error(err, FAILURE_MSG_NEW);
+		goto fail;
 	}
 
 	/* Fetch key and print its information */
-	if ((err = gpgme_get_key(ctx, FINGERPRINT, &keys[KEY], true))) {
-		util_gpgme_failure(ctx, err, FAILURE_MSG_GET_KEY);
+	if ((err = gpgme_get_key(ctx, FINGERPRINT, &keys[KEY], true)) != 0) {
+		util_gpgme_print_error(err, FAILURE_MSG_GET_KEY);
+		goto fail;
 	}
 	keys[END] = NULL;
 
@@ -42,30 +45,36 @@ main(int argc, char *argv[])
 	gpgme_set_armor(ctx, true);
 
 	/* Create input */
-	if ((err = gpgme_data_new_from_mem(&in, INPUT, INPUT_LEN, true))) {
-		gpgme_data_release(in);
-		util_gpgme_failure(ctx, err, FAILURE_MSG_NEW_INPUT);
+	if ((err = gpgme_data_new_from_mem(&in, INPUT, INPUT_LEN, true)) != 0) {
+		util_gpgme_print_error(err, FAILURE_MSG_NEW_INPUT);
+		goto fail;
 	}
 
 	/* Create empty cipher */
-	if ((err = gpgme_data_new(&out))) {
-		gpgme_data_release(in);
-		gpgme_data_release(out);
-		util_gpgme_failure(ctx, err, FAILURE_MSG_NEW_OUTPUT);
+	if ((err = gpgme_data_new(&out)) != 0) {
+		util_gpgme_print_error(err, FAILURE_MSG_NEW_OUTPUT);
+		goto fail;
 	}
 
 	/* Encrypt */
 	flags = GPGME_ENCRYPT_ALWAYS_TRUST;
-	if ((err = gpgme_op_encrypt(ctx, keys, flags, in, out))) {
-		gpgme_data_release(in);
-		gpgme_data_release(out);
-		util_gpgme_failure(ctx, err, FAILURE_MSG_ENCRYPT);
+	if ((err = gpgme_op_encrypt(ctx, keys, flags, in, out)) != 0) {
+		util_gpgme_print_error(err, FAILURE_MSG_ENCRYPT);
+		goto fail;
 	}
-	util_gpgme_print_data(ctx, out);
+
+	if (util_gpgme_print_data(out) != 0) {
+		goto fail;
+	}
 
 	gpgme_data_release(in);
 	gpgme_data_release(out);
 	gpgme_release(ctx);
-
 	return 0;
+
+fail:
+	gpgme_data_release(in);
+	gpgme_data_release(out);
+	gpgme_release(ctx);
+	exit(1);
 }

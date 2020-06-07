@@ -37,24 +37,28 @@ util_gpgme_print_key(gpgme_key_t key)
 	putchar('\n');
 }
 
-void
-util_gpgme_print_data(gpgme_ctx_t ctx, gpgme_data_t data)
+int
+util_gpgme_print_data(gpgme_data_t data)
 {
 	off_t         ret;
 	gpgme_error_t err;
 	char          buf[BUF_LEN + 1];
 
-	if ((ret = gpgme_data_seek(data, 0, SEEK_SET))) {
+	if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
 		err = gpgme_error_from_errno(ret);
-		util_gpgme_failure(ctx, err, "could not seek");
+		util_gpgme_print_error(err, "could not seek");
+		return 1;
 	}
 
-	while ((ret = gpgme_data_read(data, buf, BUF_LEN))) {
+	while ((ret = gpgme_data_read(data, buf, BUF_LEN)) != 0) {
 		fwrite(buf, ret, 1, stdout);
 	}
 
 	if (ret) {
 		err = gpgme_error_from_errno(ret);
-		util_gpgme_failure(ctx, err, "could not read");
+		util_gpgme_print_error(err, "could not read");
+		return 1;
 	}
+
+	return 0;
 }
