@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "config.h"
-#include "util.h"
+#include "util.h" // includes <gpgme.h>
 
 int
 main(int argc, char *argv[])
