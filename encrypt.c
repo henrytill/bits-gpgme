@@ -37,7 +37,7 @@ main(int argc, char *argv[])
 	}
 	keys[END] = NULL;
 
-#ifdef NDEBUG
+#ifndef NDEBUG
 	util_gpgme_print_key(keys[KEY]);
 #endif
 

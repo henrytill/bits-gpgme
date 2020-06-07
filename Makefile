@@ -1,7 +1,9 @@
 PREFIX      = /usr/local
 PROJECT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-override CFLAGS  += -std=c99 -Wall -Werror -Wextra -Wpedantic
+BASE_FLAGS = -std=c99 -Wall -Werror -Wextra -Wpedantic
+
+override CFLAGS  += $(BASE_FLAGS) -DNDEBUG
 override CFLAGS  += $(shell gpgme-config --cflags)
 override LDFLAGS += $(shell gpgme-config --libs)
 
@@ -15,7 +17,7 @@ EXE         = encrypt decrypt
 all: $(EXE)
 
 .PHONY: debug
-debug: CFLAGS += -DNDEBUG -g
+debug: CFLAGS = $(BASE_FLAGS) -g
 debug: all
 
 $(ENCRYPT_OBJ): config.h util.h Makefile
