@@ -1,6 +1,8 @@
 #ifndef GPGME_BITS_UTIL_H
 #define GPGME_BITS_UTIL_H
 
+#include <gpgme.h>
+
 /* The contents of argv[0] */
 static char *executable_name = NULL;
 

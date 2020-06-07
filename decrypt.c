@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <gpgme.h>
-
 #include "config.h"
 #include "util.h"
 
