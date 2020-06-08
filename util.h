@@ -1,10 +1,12 @@
 #ifndef GPGME_BITS_UTIL_H
 #define GPGME_BITS_UTIL_H
 
+#include <assert.h>
+
 #include <gpgme.h>
 
 /* The contents of argv[0] */
-static char *executable_name = NULL;
+char *executable_name;
 
 /* It must be done */
 #define EMPTY_STRING ""
@@ -30,6 +32,7 @@ enum { KEY = 0, END = 1 };
 /* Prints well-formatted error, releases context, and exits */
 #define util_gpgme_print_error(err, msg)                                       \
 	do {                                                                   \
+		assert(executable_name != NULL);                               \
 		fprintf(stderr,                                                \
 		        "%s: %s: %s: %s\n",                                    \
 		        executable_name,                                       \
