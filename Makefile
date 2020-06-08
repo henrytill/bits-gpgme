@@ -33,9 +33,6 @@ encrypt: $(ENCRYPT_OBJ)
 decrypt: $(DECRYPT_OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-compile_commands.json: clean
-	bear make
-
 .PHONY: check
 check: export GNUPGHOME = $(PROJECT_DIR)/example/gnupg
 check: $(EXE)
@@ -46,3 +43,9 @@ clean:
 	rm -f $(EXE)
 	rm -f $(ENCRYPT_OBJ)
 	rm -f $(DECRYPT_OBJ)
+
+compile_commands.json: FORCE
+	$(MAKE) clean
+	bear $(MAKE)
+
+FORCE:
