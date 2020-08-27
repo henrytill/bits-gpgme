@@ -1,4 +1,5 @@
 AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignConsecutiveMacros: true
 AlignTrailingComments: true

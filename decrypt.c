@@ -11,7 +11,7 @@ main(int argc, char *argv[])
 	gpgme_error_t err;
 	gpgme_ctx_t   ctx = NULL;
 	gpgme_key_t   keys[KEYS_LEN];
-	gpgme_data_t  in = NULL;
+	gpgme_data_t  in  = NULL;
 	gpgme_data_t  out = NULL;
 
 	(void)argc;
