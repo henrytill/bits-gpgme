@@ -6,7 +6,7 @@
 #include <gpgme.h>
 
 /* The contents of argv[0] */
-char *executable_name;
+extern char *executable_name;
 
 /* It must be done */
 #define EMPTY_STRING ""

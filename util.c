@@ -3,6 +3,8 @@
 
 #include "util.h"
 
+char *executable_name;
+
 gpgme_error_t
 util_gpgme_init(gpgme_protocol_t proto)
 {
