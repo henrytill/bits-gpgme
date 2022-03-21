@@ -46,6 +46,6 @@ clean:
 
 compile_commands.json: FORCE
 	$(MAKE) clean
-	bear $(MAKE)
+	bear -- $(MAKE)
 
 FORCE:
