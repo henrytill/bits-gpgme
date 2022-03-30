@@ -5,14 +5,26 @@
 
 char *executable_name;
 
+#ifdef LC_MESSAGES
+static void set_locale_lc_messages(void);
+#else
+static inline void set_locale(void);
+#endif
+
+#ifdef LC_MESSAGES
+static void set_locale_lc_messages(void) {
+    gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
+}
+#else
+static inline void set_locale(void) {}
+#endif
+
 gpgme_error_t util_gpgme_init(gpgme_protocol_t proto) {
     setlocale(LC_ALL, "");
     gpgme_check_version(NULL);
     gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
 
-#ifdef LC_MESSAGES
-    gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
-#endif
+    set_locale_lc_messages();
 
     return gpgme_engine_check_version(proto);
 }
