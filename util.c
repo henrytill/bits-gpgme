@@ -52,17 +52,17 @@ int util_gpgme_print_data(gpgme_data_t data) {
     char          buf[BUF_LEN + 1];
 
     if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
-        err = gpgme_error_from_errno(ret);
+        err = gpgme_error_from_errno((int)ret);
         util_gpgme_print_error(err, "could not seek");
         return 1;
     }
 
     while ((ret = gpgme_data_read(data, buf, BUF_LEN)) != 0) {
-        fwrite(buf, ret, 1, stdout);
+        fwrite(buf, (unsigned long)ret, 1, stdout);
     }
 
     if (ret) {
-        err = gpgme_error_from_errno(ret);
+        err = gpgme_error_from_errno((int)ret);
         util_gpgme_print_error(err, "could not read");
         return 1;
     }

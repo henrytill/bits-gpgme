@@ -1,6 +1,4 @@
-*.o
-decrypt
-encrypt
+/*build*
 compile_commands.json
 /example/gnupg/.gpg-v21-migrated
 /example/gnupg/private-keys-v1.d
