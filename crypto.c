@@ -90,7 +90,7 @@ static inline void print_key(gpgme_key_t key) {
 /*
  * Prints data
  */
-static int print_data(gpgme_data_t data) {
+static int print_data(gpgme_data_t data, FILE *output_stream) {
     off_t         ret;
     gpgme_error_t err;
     char          buf[BUF_LEN + 1];
@@ -102,7 +102,7 @@ static int print_data(gpgme_data_t data) {
     }
 
     while ((ret = gpgme_data_read(data, buf, BUF_LEN)) != 0) {
-        fwrite(buf, (unsigned long)ret, 1, stdout);
+        fwrite(buf, (unsigned long)ret, 1, output_stream);
     }
 
     if (ret) {
@@ -114,7 +114,10 @@ static int print_data(gpgme_data_t data) {
     return 0;
 }
 
-int crypto_encrypt(const char *key_fingerprint, const char *input, const size_t input_len) {
+int crypto_encrypt(const char  *key_fingerprint,
+                   const char  *input,
+                   const size_t input_len,
+                   FILE        *output_stream) {
     int                   ret = 1;
     gpgme_error_t         err;
     gpgme_ctx_t           ctx = NULL;
@@ -166,7 +169,7 @@ int crypto_encrypt(const char *key_fingerprint, const char *input, const size_t 
         goto cleanup;
     }
 
-    if (print_data(out) != 0) {
+    if (print_data(out, output_stream) != 0) {
         goto cleanup;
     }
 
@@ -178,7 +181,7 @@ cleanup:
     return ret;
 }
 
-int crypto_decrypt(const char *key_fingerprint, FILE *input_stream) {
+int crypto_decrypt(const char *key_fingerprint, FILE *input_stream, FILE *output_stream) {
     int           ret = 1;
     gpgme_error_t err;
     gpgme_ctx_t   ctx = NULL;
@@ -225,7 +228,7 @@ int crypto_decrypt(const char *key_fingerprint, FILE *input_stream) {
         goto cleanup;
     }
 
-    if (print_data(out) != 0) {
+    if (print_data(out, output_stream) != 0) {
         goto cleanup;
     }
 
