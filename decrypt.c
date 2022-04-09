@@ -1,5 +1,5 @@
-#include "config.h"
 #include "crypto.h"
+#include "data.h"
 
 int main(int argc, char *argv[]) {
     (void)argc;
