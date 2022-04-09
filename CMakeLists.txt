@@ -28,12 +28,18 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(GPGME REQUIRED gpgme)
 
-add_executable(decrypt decrypt.c util.c)
+add_library(crypto crypto.c)
+SET_COMPILER_OPTIONS(crypto)
+target_include_directories(crypto INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(crypto PRIVATE ${GPGME_INCLUDE_DIRS})
+target_link_libraries(crypto PRIVATE ${GPGME_LIBRARIES})
+
+add_executable(decrypt decrypt.c)
 SET_COMPILER_OPTIONS(decrypt)
 target_include_directories(decrypt PRIVATE ${GPGME_INCLUDE_DIRS})
-target_link_libraries(decrypt PRIVATE ${GPGME_LIBRARIES})
+target_link_libraries(decrypt PRIVATE ${GPGME_LIBRARIES} crypto)
 
-add_executable(encrypt encrypt.c util.c)
+add_executable(encrypt encrypt.c)
 SET_COMPILER_OPTIONS(encrypt)
 target_include_directories(encrypt PRIVATE ${GPGME_INCLUDE_DIRS})
-target_link_libraries(encrypt PRIVATE ${GPGME_LIBRARIES})
+target_link_libraries(encrypt PRIVATE ${GPGME_LIBRARIES} crypto)

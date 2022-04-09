@@ -1,7 +1,7 @@
 #include <locale.h>
 #include <string.h>
 
-#include "util.h"
+#include "crypto.h"
 
 char *executable_name;
 
@@ -19,7 +19,7 @@ static void set_locale_lc_messages(void) {
 static inline void set_locale(void) {}
 #endif
 
-gpgme_error_t util_gpgme_init(gpgme_protocol_t proto) {
+gpgme_error_t crypto_gpgme_init(gpgme_protocol_t proto) {
     setlocale(LC_ALL, "");
     gpgme_check_version(NULL);
     gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
@@ -29,7 +29,7 @@ gpgme_error_t util_gpgme_init(gpgme_protocol_t proto) {
     return gpgme_engine_check_version(proto);
 }
 
-void util_gpgme_print_key(gpgme_key_t key) {
+void crypto_gpgme_print_key(gpgme_key_t key) {
     /* Print keyid  */
     printf("%s:", key->subkeys->keyid);
 
@@ -46,14 +46,14 @@ void util_gpgme_print_key(gpgme_key_t key) {
     putchar('\n');
 }
 
-int util_gpgme_print_data(gpgme_data_t data) {
+int crypto_gpgme_print_data(gpgme_data_t data) {
     off_t         ret;
     gpgme_error_t err;
     char          buf[BUF_LEN + 1];
 
     if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
         err = gpgme_error_from_errno((int)ret);
-        util_gpgme_print_error(err, "could not seek");
+        crypto_gpgme_print_error(err, "could not seek");
         return 1;
     }
 
@@ -63,7 +63,7 @@ int util_gpgme_print_data(gpgme_data_t data) {
 
     if (ret) {
         err = gpgme_error_from_errno((int)ret);
-        util_gpgme_print_error(err, "could not read");
+        crypto_gpgme_print_error(err, "could not read");
         return 1;
     }
 

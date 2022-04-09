@@ -1,5 +1,5 @@
-#ifndef GPGME_BITS_UTIL_H
-#define GPGME_BITS_UTIL_H
+#ifndef GPGME_BITS_CRYPTO_H
+#define GPGME_BITS_CRYPTO_H
 
 #include <assert.h>
 
@@ -33,7 +33,7 @@ enum {
 #define BUF_LEN 512
 
 /* Prints well-formatted error, releases context, and exits */
-#define util_gpgme_print_error(err, msg)                                                           \
+#define crypto_gpgme_print_error(err, msg)                                                         \
     do {                                                                                           \
         assert(executable_name != NULL);                                                           \
         fprintf(stderr,                                                                            \
@@ -49,16 +49,16 @@ enum {
  *
  * https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
  */
-gpgme_error_t util_gpgme_init(gpgme_protocol_t proto);
+gpgme_error_t crypto_gpgme_init(gpgme_protocol_t proto);
 
 /*
  * Prints keyid, name, and email of given key
  */
-void util_gpgme_print_key(gpgme_key_t key);
+void crypto_gpgme_print_key(gpgme_key_t key);
 
 /*
  * Prints data
  */
-int util_gpgme_print_data(gpgme_data_t data);
+int crypto_gpgme_print_data(gpgme_data_t data);
 
-#endif
+#endif /* GPGME_BITS_CRYPTO_H */
