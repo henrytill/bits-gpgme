@@ -1,25 +1,57 @@
 #include <locale.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include <gpgme.h>
 
 #include "crypto.h"
 
-char *executable_name;
+/* It must be done */
+#define EMPTY_STRING ""
 
-#ifdef LC_MESSAGES
-static void set_locale_lc_messages(void);
-#else
-static inline void set_locale(void);
-#endif
+/* Failure messages */
+#define FAILURE_MSG_INIT       "could not initialize engine"
+#define FAILURE_MSG_NEW        "could not create context"
+#define FAILURE_MSG_GET_KEY    "could not fetch key"
+#define FAILURE_MSG_NEW_INPUT  "could not create input data"
+#define FAILURE_MSG_NEW_OUTPUT "could not create output data"
+#define FAILURE_MSG_ENCRYPT    "could not encrypt"
+#define FAILURE_MSG_DECRYPT    "could not decrypt"
+
+/* NULL-terminated array of length 1 */
+#define KEYS_LEN 2
+
+/* Constants for accessing keys */
+enum {
+    KEY = 0,
+    END = 1
+};
+
+/* Size of buffer for printing data */
+#define BUF_LEN 512
+
+/* Prints well-formatted error */
+#define crypto_gpgme_print_error(err, msg)                                                         \
+    do {                                                                                           \
+        fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource(err), gpgme_strerror(err));           \
+    } while (0)
 
 #ifdef LC_MESSAGES
 static void set_locale_lc_messages(void) {
     gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
 }
 #else
-static inline void set_locale(void) {}
+static inline void set_locale_lc_messages(void) {}
 #endif
 
-gpgme_error_t crypto_gpgme_init(gpgme_protocol_t proto) {
+/*
+ * Initializes GPGME based on the given protocol type
+ *
+ * https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
+ */
+static gpgme_error_t init(gpgme_protocol_t proto) {
     setlocale(LC_ALL, "");
     gpgme_check_version(NULL);
     gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
@@ -29,7 +61,11 @@ gpgme_error_t crypto_gpgme_init(gpgme_protocol_t proto) {
     return gpgme_engine_check_version(proto);
 }
 
-void crypto_gpgme_print_key(gpgme_key_t key) {
+#ifndef NDEBUG
+/*
+ * Prints keyid, name, and email of given key
+ */
+static void print_key(gpgme_key_t key) {
     /* Print keyid  */
     printf("%s:", key->subkeys->keyid);
 
@@ -45,8 +81,16 @@ void crypto_gpgme_print_key(gpgme_key_t key) {
 
     putchar('\n');
 }
+#else
+static inline void print_key(gpgme_key_t key) {
+    (void)key;
+}
+#endif
 
-int crypto_gpgme_print_data(gpgme_data_t data) {
+/*
+ * Prints data
+ */
+static int print_data(gpgme_data_t data) {
     off_t         ret;
     gpgme_error_t err;
     char          buf[BUF_LEN + 1];
@@ -68,4 +112,127 @@ int crypto_gpgme_print_data(gpgme_data_t data) {
     }
 
     return 0;
+}
+
+int crypto_encrypt(char *key_fingerprint, char *input, size_t input_len) {
+    int                   ret = 1;
+    gpgme_error_t         err;
+    gpgme_ctx_t           ctx = NULL;
+    gpgme_key_t           keys[KEYS_LEN];
+    gpgme_data_t          in  = NULL;
+    gpgme_data_t          out = NULL;
+    gpgme_encrypt_flags_t flags;
+
+    /* Initialize */
+    if ((err = init(GPGME_PROTOCOL_OPENPGP)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_INIT);
+        goto cleanup;
+    }
+
+    /* Create new context */
+    if ((err = gpgme_new(&ctx)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        goto cleanup;
+    }
+
+    /* Fetch key and print its information */
+    if ((err = gpgme_get_key(ctx, key_fingerprint, &keys[KEY], true)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_GET_KEY);
+        goto cleanup;
+    }
+    keys[END] = NULL;
+
+    print_key(keys[KEY]);
+
+    /* Turn on ASCII-armored output */
+    gpgme_set_armor(ctx, true);
+
+    /* Create input */
+    if ((err = gpgme_data_new_from_mem(&in, input, input_len, true)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_INPUT);
+        goto cleanup;
+    }
+
+    /* Create empty cipher */
+    if ((err = gpgme_data_new(&out)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_OUTPUT);
+        goto cleanup;
+    }
+
+    /* Encrypt */
+    flags = GPGME_ENCRYPT_ALWAYS_TRUST;
+    if ((err = gpgme_op_encrypt(ctx, keys, flags, in, out)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_ENCRYPT);
+        goto cleanup;
+    }
+
+    if (print_data(out) != 0) {
+        goto cleanup;
+    }
+
+    ret = 0;
+cleanup:
+    gpgme_data_release(in);
+    gpgme_data_release(out);
+    gpgme_release(ctx);
+    return ret;
+}
+
+int crypto_decrypt(char *key_fingerprint, FILE *input_stream) {
+    int           ret = 1;
+    gpgme_error_t err;
+    gpgme_ctx_t   ctx = NULL;
+    gpgme_key_t   keys[KEYS_LEN];
+    gpgme_data_t  in  = NULL;
+    gpgme_data_t  out = NULL;
+
+    /* Initialize */
+    if ((err = init(GPGME_PROTOCOL_OPENPGP)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_INIT);
+        goto cleanup;
+    }
+
+    /* Create new context */
+    if ((err = gpgme_new(&ctx)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        goto cleanup;
+    }
+
+    /* Fetch key and print its information */
+    if ((err = gpgme_get_key(ctx, key_fingerprint, &keys[KEY], true)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_GET_KEY);
+        goto cleanup;
+    }
+    keys[END] = NULL;
+
+    print_key(keys[KEY]);
+
+    /* Create input */
+    if ((err = gpgme_data_new_from_stream(&in, input_stream)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_INPUT);
+        goto cleanup;
+    }
+
+    /* Create empty output */
+    if ((err = gpgme_data_new(&out)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_OUTPUT);
+        goto cleanup;
+    }
+
+    /* Decrypt */
+    if ((err = gpgme_op_decrypt(ctx, in, out)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_DECRYPT);
+        goto cleanup;
+    }
+
+    if (print_data(out) != 0) {
+        goto cleanup;
+    }
+
+    ret = 0;
+cleanup:
+    gpgme_data_release(in);
+    gpgme_data_release(out);
+    gpgme_release(ctx);
+    return ret;
 }

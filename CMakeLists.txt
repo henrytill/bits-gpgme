@@ -36,10 +36,8 @@ target_link_libraries(crypto PRIVATE ${GPGME_LIBRARIES})
 
 add_executable(decrypt decrypt.c)
 SET_COMPILER_OPTIONS(decrypt)
-target_include_directories(decrypt PRIVATE ${GPGME_INCLUDE_DIRS})
-target_link_libraries(decrypt PRIVATE ${GPGME_LIBRARIES} crypto)
+target_link_libraries(decrypt PRIVATE crypto)
 
 add_executable(encrypt encrypt.c)
 SET_COMPILER_OPTIONS(encrypt)
-target_include_directories(encrypt PRIVATE ${GPGME_INCLUDE_DIRS})
-target_link_libraries(encrypt PRIVATE ${GPGME_LIBRARIES} crypto)
+target_link_libraries(encrypt PRIVATE crypto)
