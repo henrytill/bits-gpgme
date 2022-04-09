@@ -114,7 +114,7 @@ static int print_data(gpgme_data_t data) {
     return 0;
 }
 
-int crypto_encrypt(char *key_fingerprint, char *input, size_t input_len) {
+int crypto_encrypt(const char *key_fingerprint, const char *input, const size_t input_len) {
     int                   ret = 1;
     gpgme_error_t         err;
     gpgme_ctx_t           ctx = NULL;
@@ -178,7 +178,7 @@ cleanup:
     return ret;
 }
 
-int crypto_decrypt(char *key_fingerprint, FILE *input_stream) {
+int crypto_decrypt(const char *key_fingerprint, FILE *input_stream) {
     int           ret = 1;
     gpgme_error_t err;
     gpgme_ctx_t   ctx = NULL;
