@@ -28,7 +28,7 @@
 #define BUF_LEN 512
 
 /* Prints well-formatted error */
-#define crypto_gpgme_print_error(err, msg)                                                         \
+#define print_error(err, msg)                                                                      \
     fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource((err)), gpgme_strerror((err)));
 
 /* Constants for accessing keys */
@@ -96,7 +96,7 @@ static int print_data(gpgme_data_t data, FILE *output_stream) {
 
     if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
         err = gpgme_error_from_errno((int)ret);
-        crypto_gpgme_print_error(err, "could not seek");
+        print_error(err, "could not seek");
         return 1;
     }
 
@@ -106,7 +106,7 @@ static int print_data(gpgme_data_t data, FILE *output_stream) {
 
     if (ret) {
         err = gpgme_error_from_errno((int)ret);
-        crypto_gpgme_print_error(err, "could not read");
+        print_error(err, "could not read");
         return 1;
     }
 
@@ -128,25 +128,25 @@ int crypto_encrypt(const char *key_fingerprint,
 
     /* Initialize */
     if ((err = init(GPGME_PROTOCOL_OPENPGP)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_INIT);
+        print_error(err, FAILURE_MSG_INIT);
         goto cleanup;
     }
 
     /* Create new context */
     if ((err = gpgme_new(&ctx)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        print_error(err, FAILURE_MSG_NEW);
         goto cleanup;
     }
 
     /* Set home_dir */
     if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_HOME_DIR);
+        print_error(err, FAILURE_MSG_HOME_DIR);
         goto cleanup;
     }
 
     /* Fetch key and print its information */
     if ((err = gpgme_get_key(ctx, key_fingerprint, &keys[KEY], true)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_GET_KEY);
+        print_error(err, FAILURE_MSG_GET_KEY);
         goto cleanup;
     }
     keys[END] = NULL;
@@ -158,20 +158,20 @@ int crypto_encrypt(const char *key_fingerprint,
 
     /* Create input */
     if ((err = gpgme_data_new_from_mem(&in, input, input_len, true)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_INPUT);
+        print_error(err, FAILURE_MSG_NEW_INPUT);
         goto cleanup;
     }
 
     /* Create empty cipher */
     if ((err = gpgme_data_new(&out)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_OUTPUT);
+        print_error(err, FAILURE_MSG_NEW_OUTPUT);
         goto cleanup;
     }
 
     /* Encrypt */
     flags = GPGME_ENCRYPT_ALWAYS_TRUST;
     if ((err = gpgme_op_encrypt(ctx, keys, flags, in, out)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_ENCRYPT);
+        print_error(err, FAILURE_MSG_ENCRYPT);
         goto cleanup;
     }
 
@@ -200,25 +200,25 @@ int crypto_decrypt(const char *key_fingerprint,
 
     /* Initialize */
     if ((err = init(GPGME_PROTOCOL_OPENPGP)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_INIT);
+        print_error(err, FAILURE_MSG_INIT);
         goto cleanup;
     }
 
     /* Create new context */
     if ((err = gpgme_new(&ctx)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        print_error(err, FAILURE_MSG_NEW);
         goto cleanup;
     }
 
     /* Set home_dir */
     if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        print_error(err, FAILURE_MSG_NEW);
         goto cleanup;
     }
 
     /* Fetch key and print its information */
     if ((err = gpgme_get_key(ctx, key_fingerprint, &keys[KEY], true)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_GET_KEY);
+        print_error(err, FAILURE_MSG_GET_KEY);
         goto cleanup;
     }
     keys[END] = NULL;
@@ -227,19 +227,19 @@ int crypto_decrypt(const char *key_fingerprint,
 
     /* Create input */
     if ((err = gpgme_data_new_from_stream(&in, input_stream)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_INPUT);
+        print_error(err, FAILURE_MSG_NEW_INPUT);
         goto cleanup;
     }
 
     /* Create empty output */
     if ((err = gpgme_data_new(&out)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_NEW_OUTPUT);
+        print_error(err, FAILURE_MSG_NEW_OUTPUT);
         goto cleanup;
     }
 
     /* Decrypt */
     if ((err = gpgme_op_decrypt(ctx, in, out)) != 0) {
-        crypto_gpgme_print_error(err, FAILURE_MSG_DECRYPT);
+        print_error(err, FAILURE_MSG_DECRYPT);
         goto cleanup;
     }
 
