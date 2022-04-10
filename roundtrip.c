@@ -6,9 +6,9 @@
 #include "data.h"
 
 static const char *const CIPHERTEXT_FILE = "test_ciphertext.asc";
-static const char *const OUTPUT_FILE     = "test_output.txt";
+static const char *const OUTPUT_FILE = "test_output.txt";
 
-static const char *const READ_FLAGS  = "r";
+static const char *const READ_FLAGS = "r";
 static const char *const WRITE_FLAGS = "wb";
 
 static inline void safe_fclose(FILE *file) {
@@ -18,9 +18,9 @@ static inline void safe_fclose(FILE *file) {
 }
 
 int main(int argc, char *argv[]) {
-    int   error;
+    int error;
     FILE *ciphertext = NULL;
-    FILE *output     = NULL;
+    FILE *output = NULL;
 
     (void)argc;
     (void)argv;

@@ -92,9 +92,9 @@ static inline void print_key(gpgme_key_t key) {
  * Prints data
  */
 static int print_data(gpgme_data_t data, FILE *output_stream) {
-    gpgme_off_t   ret;
+    gpgme_off_t ret;
     gpgme_error_t err;
-    char          buf[BUF_LEN + 1];
+    char buf[BUF_LEN + 1];
 
     if ((ret = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
         err = gpgme_error_from_errno((int)ret);
@@ -115,17 +115,17 @@ static int print_data(gpgme_data_t data, FILE *output_stream) {
     return 0;
 }
 
-int crypto_encrypt(const char  *key_fingerprint,
-                   const char  *input,
+int crypto_encrypt(const char *key_fingerprint,
+                   const char *input,
                    const size_t input_len,
-                   FILE        *output_stream,
-                   const char  *home_dir) {
-    int                   ret = 1;
-    gpgme_error_t         err;
-    gpgme_ctx_t           ctx = NULL;
-    gpgme_key_t           keys[KEYS_LEN];
-    gpgme_data_t          in  = NULL;
-    gpgme_data_t          out = NULL;
+                   FILE *output_stream,
+                   const char *home_dir) {
+    int ret = 1;
+    gpgme_error_t err;
+    gpgme_ctx_t ctx = NULL;
+    gpgme_key_t keys[KEYS_LEN];
+    gpgme_data_t in = NULL;
+    gpgme_data_t out = NULL;
     gpgme_encrypt_flags_t flags;
 
     /* Initialize */
@@ -190,15 +190,15 @@ cleanup:
 }
 
 int crypto_decrypt(const char *key_fingerprint,
-                   FILE       *input_stream,
-                   FILE       *output_stream,
+                   FILE *input_stream,
+                   FILE *output_stream,
                    const char *home_dir) {
-    int           ret = 1;
+    int ret = 1;
     gpgme_error_t err;
-    gpgme_ctx_t   ctx = NULL;
-    gpgme_key_t   keys[KEYS_LEN];
-    gpgme_data_t  in  = NULL;
-    gpgme_data_t  out = NULL;
+    gpgme_ctx_t ctx = NULL;
+    gpgme_key_t keys[KEYS_LEN];
+    gpgme_data_t in = NULL;
+    gpgme_data_t out = NULL;
 
     /* Initialize */
     if ((err = init(GPGME_PROTOCOL_OPENPGP)) != 0) {
