@@ -24,20 +24,18 @@
 /* NULL-terminated array of length 1 */
 #define KEYS_LEN 2
 
-/* Constants for accessing keys */
-enum {
-    KEY = 0,
-    END = 1
-};
-
 /* Size of buffer for printing data */
 #define BUF_LEN 512
 
 /* Prints well-formatted error */
 #define crypto_gpgme_print_error(err, msg)                                                         \
-    do {                                                                                           \
-        fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource(err), gpgme_strerror(err));           \
-    } while (0)
+    fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource((err)), gpgme_strerror((err)));
+
+/* Constants for accessing keys */
+enum {
+    KEY = 0,
+    END = 1
+};
 
 #ifdef LC_MESSAGES
 static void set_locale_lc_messages(void) {
@@ -212,6 +210,7 @@ int crypto_decrypt(const char *key_fingerprint,
         goto cleanup;
     }
 
+    /* Set home_dir */
     if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir)) != 0) {
         crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
         goto cleanup;
