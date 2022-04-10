@@ -1,5 +1,8 @@
 /*build*
 compile_commands.json
-/example/gnupg/.gpg-v21-migrated
 /example/gnupg/private-keys-v1.d
 /example/gnupg/random_seed
+/example/gnupg/*-migrated
+/example/gnupg/*gpg-agent*
+/example/gnupg/*.lock
+/test

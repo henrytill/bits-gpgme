@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
+enable_testing()
 
 project(gpgme-bits C)
 
@@ -41,3 +42,11 @@ target_link_libraries(decrypt PRIVATE crypto)
 add_executable(encrypt encrypt.c)
 SET_COMPILER_OPTIONS(encrypt)
 target_link_libraries(encrypt PRIVATE crypto)
+
+add_executable(roundtrip roundtrip.c)
+SET_COMPILER_OPTIONS(roundtrip)
+target_link_libraries(roundtrip PRIVATE crypto)
+
+add_test(NAME roundtrip
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+         COMMAND roundtrip)

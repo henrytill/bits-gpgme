@@ -14,6 +14,7 @@
 /* Failure messages */
 #define FAILURE_MSG_INIT       "could not initialize engine"
 #define FAILURE_MSG_NEW        "could not create context"
+#define FAILURE_MSG_HOME_DIR   "could not set home_dir"
 #define FAILURE_MSG_GET_KEY    "could not fetch key"
 #define FAILURE_MSG_NEW_INPUT  "could not create input data"
 #define FAILURE_MSG_NEW_OUTPUT "could not create output data"
@@ -91,7 +92,7 @@ static inline void print_key(gpgme_key_t key) {
  * Prints data
  */
 static int print_data(gpgme_data_t data, FILE *output_stream) {
-    off_t         ret;
+    gpgme_off_t   ret;
     gpgme_error_t err;
     char          buf[BUF_LEN + 1];
 
@@ -117,7 +118,8 @@ static int print_data(gpgme_data_t data, FILE *output_stream) {
 int crypto_encrypt(const char  *key_fingerprint,
                    const char  *input,
                    const size_t input_len,
-                   FILE        *output_stream) {
+                   FILE        *output_stream,
+                   const char  *home_dir) {
     int                   ret = 1;
     gpgme_error_t         err;
     gpgme_ctx_t           ctx = NULL;
@@ -135,6 +137,12 @@ int crypto_encrypt(const char  *key_fingerprint,
     /* Create new context */
     if ((err = gpgme_new(&ctx)) != 0) {
         crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        goto cleanup;
+    }
+
+    /* Set home_dir */
+    if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_HOME_DIR);
         goto cleanup;
     }
 
@@ -181,7 +189,10 @@ cleanup:
     return ret;
 }
 
-int crypto_decrypt(const char *key_fingerprint, FILE *input_stream, FILE *output_stream) {
+int crypto_decrypt(const char *key_fingerprint,
+                   FILE       *input_stream,
+                   FILE       *output_stream,
+                   const char *home_dir) {
     int           ret = 1;
     gpgme_error_t err;
     gpgme_ctx_t   ctx = NULL;
@@ -197,6 +208,11 @@ int crypto_decrypt(const char *key_fingerprint, FILE *input_stream, FILE *output
 
     /* Create new context */
     if ((err = gpgme_new(&ctx)) != 0) {
+        crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
+        goto cleanup;
+    }
+
+    if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir)) != 0) {
         crypto_gpgme_print_error(err, FAILURE_MSG_NEW);
         goto cleanup;
     }
