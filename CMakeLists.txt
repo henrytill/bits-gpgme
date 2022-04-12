@@ -27,7 +27,18 @@ endif()
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
+set(MINGW_PATH C:/msys64/mingw64)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  set(LINUX TRUE)
+endif()
+
+if(MINGW)
+  set(Python3_ROOT_DIR ${MINGW_PATH})
+endif()
+
 find_package(PkgConfig REQUIRED)
+find_package(Python3 REQUIRED)
 
 pkg_check_modules(GPGME REQUIRED gpgme IMPORTED_TARGET)
 
@@ -53,3 +64,25 @@ target_link_libraries(roundtrip PRIVATE cipher)
 add_test(NAME roundtrip
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
          COMMAND roundtrip)
+
+if(LINUX)
+  set(CFFI_ARTIFACT_NAME _cipher_cffi.cpython-39-x86_64-linux-gnu.so)
+elseif(MINGW)
+  set(CFFI_ARTIFACT_NAME _cipher_cffi.cp39-mingw_x86_64.pyd)
+endif()
+
+set(CFFI_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CFFI_ARTIFACT_NAME})
+
+add_custom_command(OUTPUT ${CFFI_OUTPUT_PATH}
+                   COMMAND ${Python3_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/cipher_build.py
+                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                   DEPENDS cipher)
+
+add_custom_target(cffi ALL DEPENDS ${CFFI_OUTPUT_PATH})
+
+add_test(NAME test_roundtrip
+         COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/roundtrip.py -v
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set_tests_properties(test_roundtrip PROPERTIES
+                     ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}")
