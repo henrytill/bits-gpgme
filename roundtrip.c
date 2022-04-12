@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "crypto.h"
+#include "cipher.h"
 #include "data.h"
 
 static const char *const CIPHERTEXT_FILE = "test_ciphertext.asc";
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    error = crypto_encrypt(FINGERPRINT, INPUT, input_len, ciphertext, GNUPGHOME);
+    error = cipher_encrypt(FINGERPRINT, INPUT, input_len, ciphertext, GNUPGHOME);
     if (error != 0) {
         goto out;
     }
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         goto out;
     }
 
-    error = crypto_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
+    error = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
     if (error != 0) {
         goto out;
     }

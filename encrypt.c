@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "crypto.h"
+#include "cipher.h"
 #include "data.h"
 
 int main(int argc, char *argv[]) {
@@ -10,5 +10,5 @@ int main(int argc, char *argv[]) {
 
     const size_t input_len = strlen(INPUT);
 
-    return crypto_encrypt(FINGERPRINT, INPUT, input_len, stdout, NULL);
+    return cipher_encrypt(FINGERPRINT, INPUT, input_len, stdout, NULL);
 }

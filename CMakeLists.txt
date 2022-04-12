@@ -25,27 +25,30 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(GPGME REQUIRED gpgme)
+pkg_check_modules(GPGME REQUIRED gpgme IMPORTED_TARGET)
 
-add_library(crypto crypto.c)
-SET_COMPILER_OPTIONS(crypto)
-target_include_directories(crypto INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(crypto PRIVATE ${GPGME_INCLUDE_DIRS})
-target_link_libraries(crypto PRIVATE ${GPGME_LIBRARIES})
+add_library(cipher cipher.c)
+SET_COMPILER_OPTIONS(cipher)
+set_property(TARGET cipher
+             PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
+target_include_directories(cipher INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(cipher PRIVATE PkgConfig::GPGME)
 
 add_executable(decrypt decrypt.c)
 SET_COMPILER_OPTIONS(decrypt)
-target_link_libraries(decrypt PRIVATE crypto)
+target_link_libraries(decrypt PRIVATE cipher)
 
 add_executable(encrypt encrypt.c)
 SET_COMPILER_OPTIONS(encrypt)
-target_link_libraries(encrypt PRIVATE crypto)
+target_link_libraries(encrypt PRIVATE cipher)
 
 add_executable(roundtrip roundtrip.c)
 SET_COMPILER_OPTIONS(roundtrip)
-target_link_libraries(roundtrip PRIVATE crypto)
+target_link_libraries(roundtrip PRIVATE cipher)
 
 add_test(NAME roundtrip
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

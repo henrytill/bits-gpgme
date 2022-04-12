@@ -6,7 +6,7 @@
 
 #include <gpgme.h>
 
-#include "crypto.h"
+#include "cipher.h"
 
 /* It must be done */
 #define EMPTY_STRING ""
@@ -113,7 +113,7 @@ static int print_data(gpgme_data_t data, FILE *output_stream) {
     return 0;
 }
 
-int crypto_encrypt(const char *key_fingerprint,
+int cipher_encrypt(const char *key_fingerprint,
                    const char *input,
                    size_t input_len,
                    FILE *output_stream,
@@ -187,7 +187,7 @@ cleanup:
     return ret;
 }
 
-int crypto_decrypt(const char *key_fingerprint,
+int cipher_decrypt(const char *key_fingerprint,
                    FILE *input_stream,
                    FILE *output_stream,
                    const char *home_dir) {
