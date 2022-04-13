@@ -192,6 +192,7 @@ int cipher_encrypt(const char *key_fingerprint,
 
     ret = SUCCESS;
 cleanup:
+    gpgme_key_release(keys[KEY]);
     gpgme_data_release(in);
     gpgme_data_release(out);
     gpgme_release(ctx);
@@ -267,6 +268,7 @@ int cipher_decrypt(const char *key_fingerprint,
 
     ret = SUCCESS;
 cleanup:
+    gpgme_key_release(keys[KEY]);
     gpgme_data_release(in);
     gpgme_data_release(out);
     gpgme_release(ctx);
