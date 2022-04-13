@@ -54,13 +54,11 @@ static gpgme_error_t init(gpgme_protocol_t proto) {
     setlocale(LC_ALL, "");
     gpgme_check_version(NULL);
     gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
-
     set_locale_lc_messages();
-
     return gpgme_engine_check_version(proto);
 }
 
-#ifndef NDEBUG
+#ifdef PRINT_KEY
 /*
  * Prints keyid, name, and email of given key
  */
