@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 enable_testing()
+include(CheckIncludeFile)
 
 project(gpgme-bits C)
 
@@ -12,6 +13,28 @@ string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 macro(SET_COMPILER_OPTIONS target)
   target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wconversion -Wsign-conversion)
 endmacro(SET_COMPILER_OPTIONS)
+
+if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+  SET(CLANG TRUE)
+  MESSAGE(STATUS "clang town")
+endif()
+
+CHECK_INCLUDE_FILE(sanitizer/asan_interface.h HAS_ASAN_INTERFACE)
+
+if(HAS_ASAN_INTERFACE)
+  message(STATUS "Using address sanitizer")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+  if(CLANG)
+    message(STATUS "Using shared libasan")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -shared-libasan")
+  endif()
+  if(CLANG)
+    execute_process(COMMAND clang -print-file-name=libclang_rt.asan-x86_64.so OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE LIBASAN)
+  else()
+    find_library(LIBASAN NAMES asan libasan.so.6)
+  endif()
+  message(STATUS "libasan found: ${LIBASAN}")
+endif()
 
 # https://blog.kitware.com/cmake-and-the-default-build-type/
 set(default_build_type "Debug")
@@ -65,6 +88,12 @@ add_test(NAME roundtrip
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
          COMMAND roundtrip)
 
+if(HAS_ASAN_INTERFACE)
+  get_filename_component(LIBASAN_DIR ${LIBASAN} DIRECTORY)
+  set_tests_properties(roundtrip PROPERTIES
+                       ENVIRONMENT "LD_LIBRARY_PATH=${LIBASAN_DIR}")
+endif()
+
 if(LINUX)
   set(CFFI_ARTIFACT_NAME _cipher_cffi.cpython-39-x86_64-linux-gnu.so)
 elseif(MINGW)
@@ -80,9 +109,16 @@ add_custom_command(OUTPUT ${CFFI_OUTPUT_PATH}
 
 add_custom_target(cffi ALL DEPENDS ${CFFI_OUTPUT_PATH})
 
-add_test(NAME test_roundtrip
-         COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/roundtrip.py -v
-         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+if((NOT HAS_ASAN_INTERFACE) OR CLANG)
+  add_test(NAME test_roundtrip
+           COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/roundtrip.py -v
+           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
 
-set_tests_properties(test_roundtrip PROPERTIES
-                     ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}")
+if(HAS_ASAN_INTERFACE AND CLANG)
+  set_tests_properties(test_roundtrip PROPERTIES
+                       ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR};LD_PRELOAD=${LIBASAN}")
+elseif(NOT HAS_ASAN_INTERFACE)
+  set_tests_properties(test_roundtrip PROPERTIES
+                       ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}")
+endif()
