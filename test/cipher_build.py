@@ -13,14 +13,14 @@ def read_header_content(path: str):
 
 def main():
     ffibuilder = FFI()
-    header_content = read_header_content("../cipher.h")
+    header_content = read_header_content("../src/cipher.h")
     ffibuilder.cdef(header_content)
     ffibuilder.set_source("_cipher_cffi",
                           """
                           #include "cipher.h"
                           """,
-                          include_dirs=['../.'],
-                          library_dirs=['./.'],
+                          include_dirs=['../src'],
+                          library_dirs=['./src'],
                           libraries=['cipher'])
     ffibuilder.compile(verbose=True)
 
