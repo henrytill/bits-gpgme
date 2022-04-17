@@ -105,7 +105,7 @@ static int print_data(gpgme_data_t data, FILE *output_stream) {
     }
 
     while ((off = gpgme_data_read(data, buf, BUF_LEN)) > 0) {
-        fwrite(buf, (unsigned long)off, 1, output_stream);
+        fwrite(buf, (size_t)off, 1, output_stream);
     }
 
     if (off == -1) {
