@@ -10,6 +10,7 @@ enable_testing()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 include(Platform)
 include(AddressSanitizer)
+include(UndefinedBehaviorSanitizer)
 
 # https://stackoverflow.com/a/58711983
 string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
