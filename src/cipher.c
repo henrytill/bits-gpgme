@@ -28,9 +28,8 @@
 #define BUF_LEN 512
 
 /* Prints well-formatted error */
-#define print_error(err, msg)                                                  \
-	fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource((err)),           \
-		gpgme_strerror((err)));
+#define print_error(err, msg) \
+	fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource((err)), gpgme_strerror((err)));
 
 enum {
 	SUCCESS = 0,
@@ -132,8 +131,7 @@ print_data(gpgme_data_t data, FILE *output_stream)
 }
 
 int
-cipher_encrypt(const char *key_fingerprint, const char *input, size_t input_len,
-	FILE *output_stream, const char *home_dir)
+cipher_encrypt(const char *key_fingerprint, const char *input, size_t input_len, FILE *output_stream, const char *home_dir)
 {
 	int ret = FAILURE;
 	gpgme_error_t error;
@@ -158,8 +156,7 @@ cipher_encrypt(const char *key_fingerprint, const char *input, size_t input_len,
 	}
 
 	/* Set home_dir */
-	error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL,
-		home_dir);
+	error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir);
 	if (error != SUCCESS) {
 		print_error(error, FAILURE_MSG_HOME_DIR);
 		goto cleanup;
@@ -214,8 +211,7 @@ cleanup:
 }
 
 int
-cipher_decrypt(const char *key_fingerprint, FILE *input_stream,
-	FILE *output_stream, const char *home_dir)
+cipher_decrypt(const char *key_fingerprint, FILE *input_stream, FILE *output_stream, const char *home_dir)
 {
 	int ret = FAILURE;
 	gpgme_error_t error;
@@ -239,8 +235,7 @@ cipher_decrypt(const char *key_fingerprint, FILE *input_stream,
 	}
 
 	/* Set home_dir */
-	error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL,
-		home_dir);
+	error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir);
 	if (error != SUCCESS) {
 		print_error(error, FAILURE_MSG_NEW);
 		goto cleanup;

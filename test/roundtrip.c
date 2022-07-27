@@ -47,8 +47,7 @@ main(int argc, char *argv[])
 			goto out;
 		}
 
-		error = cipher_encrypt(FINGERPRINT, INPUT, input_len,
-			ciphertext, GNUPGHOME);
+		error = cipher_encrypt(FINGERPRINT, INPUT, input_len, ciphertext, GNUPGHOME);
 		if (error != SUCCESS) {
 			goto out;
 		}
@@ -71,8 +70,7 @@ main(int argc, char *argv[])
 			goto out;
 		}
 
-		error = cipher_decrypt(FINGERPRINT, ciphertext, output,
-			GNUPGHOME);
+		error = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
 		if (error != SUCCESS) {
 			goto out;
 		}
@@ -89,8 +87,7 @@ main(int argc, char *argv[])
 			goto out;
 		}
 
-		while (fgets(output_buf, (int)sizeof output_buf, output)
-			!= NULL) {
+		while (fgets(output_buf, (int)sizeof output_buf, output) != NULL) {
 			/* read */
 		}
 
