@@ -10,95 +10,90 @@ enum {
 	FAILURE = 1,
 };
 
-static const char *const CIPHERTEXT_FILE = "test_ciphertext.asc";
-static const char *const OUTPUT_FILE = "test_output.txt";
-
-static const char *const READ_FLAGS = "r";
-static const char *const WRITE_FLAGS = "wb";
-
-static inline void
-safe_fclose(FILE **file)
-{
-	if (*file != NULL) {
-		fclose(*file);
-		*file = NULL;
-	}
-}
+static const char *const CIPHERTEXT = "ciphertext.asc";
+static const char *const OUTPUT = "output.txt";
 
 int
 main(int argc, char *argv[])
 {
-	int error;
+	int rc;
 	FILE *ciphertext = NULL;
 	FILE *output = NULL;
 
 	(void)argc;
 	(void)argv;
 
-	const size_t input_len = strlen(INPUT);
+	const size_t inputsz = strlen(INPUT);
 
-	char output_buf[input_len + 1];
+	char buf[inputsz + 1];
 
 	{
-		ciphertext = fopen(CIPHERTEXT_FILE, WRITE_FLAGS);
+		ciphertext = fopen(CIPHERTEXT, "wb");
 		if (ciphertext == NULL) {
 			perror("Failed to open file");
-			error = FAILURE;
-			goto out;
+			return EXIT_FAILURE;
 		}
 
-		error = cipher_encrypt(FINGERPRINT, INPUT, input_len, ciphertext, GNUPGHOME);
-		if (error != SUCCESS) {
-			goto out;
+		rc = cipher_encrypt(FINGERPRINT, INPUT, inputsz, ciphertext, GNUPGHOME);
+		if (rc != SUCCESS) {
+			perror("Failed to encrypt.");
+			fclose(ciphertext);
+			remove(CIPHERTEXT);
+			return EXIT_FAILURE;
 		}
 
-		safe_fclose(&ciphertext);
+		fclose(ciphertext);
 	}
 
 	{
-		ciphertext = fopen(CIPHERTEXT_FILE, READ_FLAGS);
+		ciphertext = fopen(CIPHERTEXT, "r");
 		if (ciphertext == NULL) {
 			perror("Failed to open file");
-			error = FAILURE;
-			goto out;
+			remove(CIPHERTEXT);
+			return EXIT_FAILURE;
 		}
 
-		output = fopen(OUTPUT_FILE, WRITE_FLAGS);
+		output = fopen(OUTPUT, "wb");
 		if (output == NULL) {
 			perror("Failed to open file");
-			error = FAILURE;
-			goto out;
+			fclose(ciphertext);
+			remove(CIPHERTEXT);
+			return EXIT_FAILURE;
 		}
 
-		error = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
-		if (error != SUCCESS) {
-			goto out;
+		rc = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
+		if (rc != SUCCESS) {
+			perror("Failed to decrypt");
+			fclose(ciphertext);
+			remove(CIPHERTEXT);
+			fclose(output);
+			remove(OUTPUT);
 		}
 
-		safe_fclose(&output);
-		safe_fclose(&ciphertext);
+		fclose(ciphertext);
+		remove(CIPHERTEXT);
+		fclose(output);
 	}
 
 	{
-		output = fopen(OUTPUT_FILE, READ_FLAGS);
+		output = fopen(OUTPUT, "r");
 		if (output == NULL) {
 			perror("Failed to open file");
-			error = FAILURE;
-			goto out;
+			remove(OUTPUT);
+			return EXIT_FAILURE;
 		}
 
-		while (fgets(output_buf, (int)sizeof output_buf, output) != NULL) {
+		while (fgets(buf, (int)sizeof buf, output) != NULL) {
 			/* read */
 		}
 
-		safe_fclose(&output);
+		fclose(output);
+		remove(OUTPUT);
 	}
 
-	error = strcmp(INPUT, output_buf);
-out:
-	safe_fclose(&ciphertext);
-	safe_fclose(&output);
-	remove(CIPHERTEXT_FILE);
-	remove(OUTPUT_FILE);
-	return error;
+	if (strcmp(INPUT, buf) != 0) {
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }

@@ -8,85 +8,62 @@
 
 #include "cipher.h"
 
-/* It must be done */
-#define EMPTY_STRING ""
+#define FAILINIT    "could not initialize engine"
+#define FAILNEW     "could not create context"
+#define FAILHOME    "could not set homedir"
+#define FAILKEY     "could not fetch key"
+#define FAILINPUT   "could not create input data"
+#define FAILOUTPUT  "could not create output data"
+#define FAILENCRYPT "could not encrypt"
+#define FAILDECRYPT "could not decrypt"
 
-/* Failure messages */
-#define FAILURE_MSG_INIT       "could not initialize engine"
-#define FAILURE_MSG_NEW        "could not create context"
-#define FAILURE_MSG_HOME_DIR   "could not set home_dir"
-#define FAILURE_MSG_GET_KEY    "could not fetch key"
-#define FAILURE_MSG_NEW_INPUT  "could not create input data"
-#define FAILURE_MSG_NEW_OUTPUT "could not create output data"
-#define FAILURE_MSG_ENCRYPT    "could not encrypt"
-#define FAILURE_MSG_DECRYPT    "could not decrypt"
-
-/* NULL-terminated array of length 1 */
-#define KEYS_LEN 2
-
-/* Size of buffer for printing data */
-#define BUF_LEN 512
-
-/* Prints well-formatted error */
-#define print_error(err, msg) \
-	fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource((err)), gpgme_strerror((err)));
+enum {
+	KEYSZ = 2,   /* NULL-terminated array of length 1 */
+	BUFSZ = 512, /* Size of buffer for printing data */
+};
 
 enum {
 	SUCCESS = 0,
 	FAILURE = 1,
 };
 
-/* Constants for accessing keys */
 enum {
 	KEY = 0,
 	END = 1,
 };
 
-#ifdef LC_MESSAGES
-static void
-set_locale_lc_messages(void)
-{
-	gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
-}
-#else
-static inline void
-set_locale_lc_messages(void)
-{
-}
-#endif
-
-/*
- * Initializes GPGME based on the given protocol type
- *
- * https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
- */
+/* https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html */
 static gpgme_error_t
 init(gpgme_protocol_t proto)
 {
 	setlocale(LC_ALL, "");
 	gpgme_check_version(NULL);
 	gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
-	set_locale_lc_messages();
+
+#ifdef LC_MESSAGES
+	gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
+#endif
+
 	return gpgme_engine_check_version(proto);
 }
 
-#ifdef PRINT_KEY
-/*
- * Prints keyid, name, and email of given key
- */
 static void
-print_key(gpgme_key_t key)
+printerr(gpgme_error_t err, char *msg)
 {
-	/* Print keyid  */
+	fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource((err)), gpgme_strerror((err)));
+}
+
+#ifdef PRINT_KEY
+static void
+printkey(gpgme_key_t key)
+{
 	printf("%s:", key->subkeys->keyid);
 
-	/* Print name */
 	if (key->uids && key->uids->name) {
 		printf(" %s", key->uids->name);
 	}
 
-	/* Print email */
-	if (key->uids && (strcmp(key->uids->email, EMPTY_STRING) != 0)) {
+	if (key->uids && (strcmp(key->uids->email, "") != 0)) {
 		printf(" <%s>", key->uids->email);
 	}
 
@@ -94,36 +71,33 @@ print_key(gpgme_key_t key)
 }
 #else
 static inline void
-print_key(gpgme_key_t key)
+printkey(gpgme_key_t key)
 {
 	(void)key;
 }
 #endif
 
-/*
- * Prints data
- */
 static int
-print_data(gpgme_data_t data, FILE *output_stream)
+writedata(gpgme_data_t data, FILE *fp)
 {
 	gpgme_off_t off;
-	gpgme_error_t error;
-	char buf[BUF_LEN + 1];
+	gpgme_error_t err;
+	char buf[BUFSZ + 1];
 
 	off = gpgme_data_seek(data, 0, SEEK_SET);
 	if (off != 0) {
-		error = gpgme_error_from_errno((int)off);
-		print_error(error, "could not seek");
+		err = gpgme_error_from_errno((int)off);
+		printerr(err, "could not seek");
 		return FAILURE;
 	}
 
-	while ((off = gpgme_data_read(data, buf, BUF_LEN)) > 0) {
-		fwrite(buf, (size_t)off, 1, output_stream);
+	while ((off = gpgme_data_read(data, buf, BUFSZ)) > 0) {
+		fwrite(buf, (size_t)off, 1, fp);
 	}
 
 	if (off == -1) {
-		error = gpgme_error_from_errno((int)off);
-		print_error(error, "could not read");
+		err = gpgme_error_from_errno((int)off);
+		printerr(err, "could not read");
 		return FAILURE;
 	}
 
@@ -131,156 +105,147 @@ print_data(gpgme_data_t data, FILE *output_stream)
 }
 
 int
-cipher_encrypt(const char *key_fingerprint, const char *input, size_t input_len, FILE *output_stream, const char *home_dir)
+cipher_encrypt(const char *fgpt, const char *input, size_t inputsz, FILE *fpout, const char *home)
 {
 	int ret = FAILURE;
-	gpgme_error_t error;
+	gpgme_error_t err;
 	gpgme_ctx_t ctx = NULL;
-	gpgme_key_t keys[KEYS_LEN];
+	gpgme_key_t key[KEYSZ];
 	gpgme_data_t in = NULL;
 	gpgme_data_t out = NULL;
 	gpgme_encrypt_flags_t flags;
 
-	/* Initialize */
-	error = init(GPGME_PROTOCOL_OPENPGP);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_INIT);
-		goto cleanup;
+	err = init(GPGME_PROTOCOL_OPENPGP);
+	if (err != SUCCESS) {
+		printerr(err, FAILINIT);
+		return FAILURE;
 	}
 
-	/* Create new context */
-	error = gpgme_new(&ctx);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW);
-		goto cleanup;
+	err = gpgme_new(&ctx);
+	if (err != SUCCESS) {
+		printerr(err, FAILNEW);
+		return FAILURE;
 	}
 
-	/* Set home_dir */
-	error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_HOME_DIR);
-		goto cleanup;
+	err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home);
+	if (err != SUCCESS) {
+		printerr(err, FAILHOME);
+		goto out0;
 	}
 
-	/* Fetch key and print its information */
-	error = gpgme_get_key(ctx, key_fingerprint, &keys[KEY], true);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_GET_KEY);
-		goto cleanup;
+	err = gpgme_get_key(ctx, fgpt, &key[KEY], true);
+	if (err != SUCCESS) {
+		printerr(err, FAILKEY);
+		goto out0;
 	}
-	keys[END] = NULL;
+	key[END] = NULL;
 
-	print_key(keys[KEY]);
+	printkey(key[KEY]);
 
-	/* Turn on ASCII-armored output */
 	gpgme_set_armor(ctx, true);
 
-	/* Create input */
-	error = gpgme_data_new_from_mem(&in, input, input_len, true);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW_INPUT);
-		goto cleanup;
+	err = gpgme_data_new_from_mem(&in, input, inputsz, true);
+	if (err != SUCCESS) {
+		printerr(err, FAILINPUT);
+		goto out1;
 	}
 
-	/* Create empty cipher */
-	error = gpgme_data_new(&out);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW_OUTPUT);
-		goto cleanup;
+	err = gpgme_data_new(&out);
+	if (err != SUCCESS) {
+		printerr(err, FAILOUTPUT);
+		goto out2;
 	}
 
-	/* Encrypt */
 	flags = GPGME_ENCRYPT_ALWAYS_TRUST;
-	error = gpgme_op_encrypt(ctx, keys, flags, in, out);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_ENCRYPT);
-		goto cleanup;
+	err = gpgme_op_encrypt(ctx, key, flags, in, out);
+	if (err != SUCCESS) {
+		printerr(err, FAILENCRYPT);
+		goto out3;
 	}
 
-	if (print_data(out, output_stream) != SUCCESS) {
-		goto cleanup;
+	if (writedata(out, fpout) != SUCCESS) {
+		goto out3;
 	}
 
 	ret = SUCCESS;
-cleanup:
-	gpgme_key_release(keys[KEY]);
-	gpgme_data_release(in);
+out3:
 	gpgme_data_release(out);
+out2:
+	gpgme_data_release(in);
+out1:
+	gpgme_key_release(key[KEY]);
+out0:
 	gpgme_release(ctx);
 	return ret;
 }
 
 int
-cipher_decrypt(const char *key_fingerprint, FILE *input_stream, FILE *output_stream, const char *home_dir)
+cipher_decrypt(const char *fgpt, FILE *fpin, FILE *fpout, const char *home)
 {
 	int ret = FAILURE;
-	gpgme_error_t error;
+	gpgme_error_t err;
 	gpgme_ctx_t ctx = NULL;
-	gpgme_key_t keys[KEYS_LEN];
+	gpgme_key_t key[KEYSZ];
 	gpgme_data_t in = NULL;
 	gpgme_data_t out = NULL;
 
-	/* Initialize */
-	error = init(GPGME_PROTOCOL_OPENPGP);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_INIT);
-		goto cleanup;
+	err = init(GPGME_PROTOCOL_OPENPGP);
+	if (err != SUCCESS) {
+		printerr(err, FAILINIT);
+		return FAILURE;
 	}
 
-	/* Create new context */
-	error = gpgme_new(&ctx);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW);
-		goto cleanup;
+	err = gpgme_new(&ctx);
+	if (err != SUCCESS) {
+		printerr(err, FAILNEW);
+		return FAILURE;
 	}
 
-	/* Set home_dir */
-	error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home_dir);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW);
-		goto cleanup;
+	err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home);
+	if (err != SUCCESS) {
+		printerr(err, FAILNEW);
+		goto out0;
 	}
 
-	/* Fetch key and print its information */
-	error = gpgme_get_key(ctx, key_fingerprint, &keys[KEY], true);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_GET_KEY);
-		goto cleanup;
+	err = gpgme_get_key(ctx, fgpt, &key[KEY], true);
+	if (err != SUCCESS) {
+		printerr(err, FAILKEY);
+		goto out0;
 	}
-	keys[END] = NULL;
+	key[END] = NULL;
 
-	print_key(keys[KEY]);
+	printkey(key[KEY]);
 
-	/* Create input */
-	error = gpgme_data_new_from_stream(&in, input_stream);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW_INPUT);
-		goto cleanup;
+	err = gpgme_data_new_from_stream(&in, fpin);
+	if (err != SUCCESS) {
+		printerr(err, FAILINPUT);
+		goto out1;
 	}
 
-	/* Create empty output */
-	error = gpgme_data_new(&out);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_NEW_OUTPUT);
-		goto cleanup;
+	err = gpgme_data_new(&out);
+	if (err != SUCCESS) {
+		printerr(err, FAILOUTPUT);
+		goto out2;
 	}
 
-	/* Decrypt */
-	error = gpgme_op_decrypt(ctx, in, out);
-	if (error != SUCCESS) {
-		print_error(error, FAILURE_MSG_DECRYPT);
-		goto cleanup;
+	err = gpgme_op_decrypt(ctx, in, out);
+	if (err != SUCCESS) {
+		printerr(err, FAILDECRYPT);
+		goto out3;
 	}
 
-	if (print_data(out, output_stream) != SUCCESS) {
-		goto cleanup;
+	if (writedata(out, fpout) != SUCCESS) {
+		goto out3;
 	}
 
 	ret = SUCCESS;
-cleanup:
-	gpgme_key_release(keys[KEY]);
-	gpgme_data_release(in);
+out3:
 	gpgme_data_release(out);
+out2:
+	gpgme_data_release(in);
+out1:
+	gpgme_key_release(key[KEY]);
+out0:
 	gpgme_release(ctx);
 	return ret;
 }

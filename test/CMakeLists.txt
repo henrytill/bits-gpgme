@@ -2,15 +2,15 @@ add_executable(roundtrip roundtrip.c)
 SET_COMPILER_OPTIONS(roundtrip)
 target_link_libraries(roundtrip PRIVATE cipher)
 
-add_test(NAME roundtrip
+add_test(NAME roundtrip.c
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
          COMMAND roundtrip)
 
 if(UNIX)
-  set_tests_properties(roundtrip PROPERTIES
+  set_tests_properties(roundtrip.c PROPERTIES
                        ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src")
 elseif(MSVC OR MINGW)
-  set_tests_properties(roundtrip PROPERTIES
+  set_tests_properties(roundtrip.c PROPERTIES
                        ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/src\;$ENV{PATH}")
 endif()
 
@@ -30,15 +30,15 @@ if(NOT ASAN)
 
   add_custom_target(cffi ALL DEPENDS ${CFFI_OUTPUT_PATH})
 
-  add_test(NAME test_roundtrip
+  add_test(NAME roundtrip.py
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/roundtrip.py -v
            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   if(UNIX)
-    set_tests_properties(test_roundtrip PROPERTIES
+    set_tests_properties(roundtrip.py PROPERTIES
                          ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src")
   elseif(MSVC OR MINGW)
-    set_tests_properties(test_roundtrip PROPERTIES
+    set_tests_properties(roundtrip.py PROPERTIES
                          ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};PATH=${CMAKE_BINARY_DIR}/src\;$ENV{PATH}")
   endif()
 endif()

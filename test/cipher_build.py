@@ -2,7 +2,7 @@ from cffi import FFI
 import re
 
 
-def read_header_content(path: str):
+def readhdr(path: str):
     ret = ""
     with open(path) as file:
         for line in file:
@@ -13,8 +13,8 @@ def read_header_content(path: str):
 
 def main():
     ffibuilder = FFI()
-    header_content = read_header_content("../src/cipher.h")
-    ffibuilder.cdef(header_content)
+    hdr = readhdr("../src/cipher.h")
+    ffibuilder.cdef(hdr)
     ffibuilder.set_source("_cipher_cffi",
                           """
                           #include "cipher.h"
