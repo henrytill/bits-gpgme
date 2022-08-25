@@ -3,11 +3,9 @@
 #include "cipher.h"
 #include "data.h"
 
-int
-main(int argc, char *argv[])
-{
-	(void)argc;
-	(void)argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
-	return cipher_decrypt(FINGERPRINT, stdin, stdout, NULL);
+  return cipher_decrypt(FINGERPRINT, stdin, stdout, NULL);
 }
