@@ -16,6 +16,7 @@
 #define FAILOUTPUT  "failed to create output data"
 #define FAILENCRYPT "failed to encrypt"
 #define FAILDECRYPT "failed to decrypt"
+#define FAILWRITE   "failed to write"
 
 enum {
   KEYSZ = 2,   /* NULL-terminated array of length 1 */
@@ -50,13 +51,10 @@ static void printerr(gpgme_error_t err, char *msg) {
 #ifdef PRINT_KEY
 static void printkey(gpgme_key_t key) {
   printf("%s:", key->subkeys->keyid);
-
   if (key->uids && key->uids->name)
     printf(" %s", key->uids->name);
-
   if (key->uids && (strcmp(key->uids->email, "") != 0))
     printf(" <%s>", key->uids->email);
-
   putchar('\n');
 }
 #else
@@ -75,16 +73,13 @@ static int writedata(gpgme_data_t data, FILE *fp) {
     printerr(err, "failed to seek");
     return FAILURE;
   }
-
   while ((off = gpgme_data_read(data, buf, BUFSZ)) > 0)
     fwrite(buf, (size_t)off, 1, fp);
-
   if (off == -1) {
     err = gpgme_error_from_errno((int)off);
     printerr(err, "failed to read");
     return FAILURE;
   }
-
   return SUCCESS;
 }
 
@@ -100,45 +95,37 @@ int cipher_encrypt(const char *fgpt, const char *input, size_t inputsz, FILE *fp
     printerr(err, FAILINIT);
     return FAILURE;
   }
-
   if ((err = gpgme_new(&ctx)) != SUCCESS) {
     printerr(err, FAILNEW);
     return FAILURE;
   }
-
   if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home)) != SUCCESS) {
     printerr(err, FAILHOME);
     goto out0;
   }
-
   if ((err = gpgme_get_key(ctx, fgpt, &key[KEY], true)) != SUCCESS) {
     printerr(err, FAILKEY);
     goto out0;
   }
   key[END] = NULL;
-
   printkey(key[KEY]);
-
   gpgme_set_armor(ctx, true);
-
   if ((err = gpgme_data_new_from_mem(&in, input, inputsz, true)) != SUCCESS) {
     printerr(err, FAILINPUT);
     goto out1;
   }
-
   if ((err = gpgme_data_new(&out)) != SUCCESS) {
     printerr(err, FAILOUTPUT);
     goto out2;
   }
-
   if ((err = gpgme_op_encrypt(ctx, key, GPGME_ENCRYPT_ALWAYS_TRUST, in, out)) != SUCCESS) {
     printerr(err, FAILENCRYPT);
     goto out3;
   }
-
-  if (writedata(out, fpout) != SUCCESS)
+  if (writedata(out, fpout) != SUCCESS) {
+    perror(FAILWRITE);
     goto out3;
-
+  }
   ret = SUCCESS;
 out3:
   gpgme_data_release(out);
@@ -163,43 +150,36 @@ int cipher_decrypt(const char *fgpt, FILE *fpin, FILE *fpout, const char *home) 
     printerr(err, FAILINIT);
     return FAILURE;
   }
-
   if ((err = gpgme_new(&ctx)) != SUCCESS) {
     printerr(err, FAILNEW);
     return FAILURE;
   }
-
   if ((err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home)) != SUCCESS) {
     printerr(err, FAILNEW);
     goto out0;
   }
-
   if ((err = gpgme_get_key(ctx, fgpt, &key[KEY], true)) != SUCCESS) {
     printerr(err, FAILKEY);
     goto out0;
   }
   key[END] = NULL;
-
   printkey(key[KEY]);
-
   if ((err = gpgme_data_new_from_stream(&in, fpin)) != SUCCESS) {
     printerr(err, FAILINPUT);
     goto out1;
   }
-
   if ((err = gpgme_data_new(&out)) != SUCCESS) {
     printerr(err, FAILOUTPUT);
     goto out2;
   }
-
   if ((err = gpgme_op_decrypt(ctx, in, out)) != SUCCESS) {
     printerr(err, FAILDECRYPT);
     goto out3;
   }
-
-  if (writedata(out, fpout) != SUCCESS)
+  if (writedata(out, fpout) != SUCCESS) {
+    perror(FAILWRITE);
     goto out3;
-
+  }
   ret = SUCCESS;
 out3:
   gpgme_data_release(out);
