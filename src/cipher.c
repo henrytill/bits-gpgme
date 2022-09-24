@@ -17,6 +17,8 @@
 #define FAILENCRYPT "failed to encrypt"
 #define FAILDECRYPT "failed to decrypt"
 #define FAILWRITE   "failed to write"
+#define FAILSEEK    "failed to seek"
+#define FAILREAD    "failed to read"
 
 enum {
   KEYSZ = 2,   /* NULL-terminated array of length 1 */
@@ -70,14 +72,14 @@ static int writedata(gpgme_data_t data, FILE *fp) {
 
   if ((off = gpgme_data_seek(data, 0, SEEK_SET)) != 0) {
     err = gpgme_error_from_errno((int)off);
-    printerr(err, "failed to seek");
+    printerr(err, FAILSEEK);
     return FAILURE;
   }
   while ((off = gpgme_data_read(data, buf, BUFSZ)) > 0)
     fwrite(buf, (size_t)off, 1, fp);
   if (off == -1) {
     err = gpgme_error_from_errno((int)off);
-    printerr(err, "failed to read");
+    printerr(err, FAILREAD);
     return FAILURE;
   }
   return SUCCESS;
