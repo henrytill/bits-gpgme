@@ -1,5 +1,6 @@
 from cffi import FFI
 import re
+import sys
 
 
 def readhdr(path: str):
@@ -12,6 +13,7 @@ def readhdr(path: str):
 
 
 def main():
+    target = sys.argv[1]
     ffibuilder = FFI()
     hdr = readhdr("../src/cipher.h")
     ffibuilder.cdef(hdr)
@@ -22,7 +24,7 @@ def main():
                           include_dirs=['../src'],
                           library_dirs=['./src'],
                           libraries=['cipher'])
-    ffibuilder.compile(target='_cipher_cffi.*', verbose=True)
+    ffibuilder.compile(target=target, verbose=True)
 
 
 if __name__ == "__main__":

@@ -15,11 +15,17 @@ elseif(MSVC OR MINGW)
 endif()
 
 if(NOT ASAN)
-  set(CFFI_ARTIFACT_NAME _cipher_cffi${CMAKE_SHARED_LIBRARY_SUFFIX})
+  if(UNIX)
+    set(CFFI_ARTIFACT_NAME _cipher_cffi${CMAKE_SHARED_LIBRARY_SUFFIX})
+  elseif(MSVC OR MINGW)
+    # https://docs.python.org/3/faq/windows.html#is-a-pyd-file-the-same-as-a-dll
+    set(CFFI_ARTIFACT_NAME _cipher_cffi.pyd)
+  endif()
+
   set(CFFI_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CFFI_ARTIFACT_NAME})
 
   add_custom_command(OUTPUT ${CFFI_OUTPUT_PATH}
-                     COMMAND ${Python3_EXECUTABLE} ARGS ${CMAKE_CURRENT_SOURCE_DIR}/cipher_build.py
+                     COMMAND ${Python3_EXECUTABLE} ARGS ${CMAKE_CURRENT_SOURCE_DIR}/cipher_build.py ${CFFI_ARTIFACT_NAME}
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                      DEPENDS cipher)
 
