@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     fclose(ciphertext);
+    ciphertext = NULL;
   }
 
   {
@@ -62,6 +63,8 @@ int main(int argc, char *argv[]) {
     fclose(ciphertext);
     remove(CIPHERTEXT);
     fclose(output);
+    ciphertext = NULL;
+    output = NULL;
   }
 
   {
@@ -74,6 +77,7 @@ int main(int argc, char *argv[]) {
     while (fgets(buf, (int)sizeof buf, output) != NULL) continue;
     fclose(output);
     remove(OUTPUT);
+    output = NULL;
   }
 
   if (strcmp(INPUT, buf) != 0) return EXIT_FAILURE;
