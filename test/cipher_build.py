@@ -22,7 +22,7 @@ def main():
                           include_dirs=['../src'],
                           library_dirs=['./src'],
                           libraries=['cipher'])
-    ffibuilder.compile(verbose=True)
+    ffibuilder.compile(target='_cipher_cffi.*', verbose=True)
 
 
 if __name__ == "__main__":

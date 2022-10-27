@@ -15,12 +15,7 @@ elseif(MSVC OR MINGW)
 endif()
 
 if(NOT ASAN)
-  if(LINUX)
-    set(CFFI_ARTIFACT_NAME _cipher_cffi.cpython-39-x86_64-linux-gnu.so)
-  elseif(MINGW)
-    set(CFFI_ARTIFACT_NAME _cipher_cffi.cp39-mingw_x86_64.pyd)
-  endif()
-
+  set(CFFI_ARTIFACT_NAME _cipher_cffi${CMAKE_SHARED_LIBRARY_SUFFIX})
   set(CFFI_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CFFI_ARTIFACT_NAME})
 
   add_custom_command(OUTPUT ${CFFI_OUTPUT_PATH}
