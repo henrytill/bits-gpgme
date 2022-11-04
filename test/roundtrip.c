@@ -16,6 +16,7 @@ static const char *const OUTPUT = "output.txt";
 int main(int argc, char *argv[]) {
   FILE *ciphertext = NULL;
   FILE *output = NULL;
+  int rc;
 
   (void)argc;
   (void)argv;
@@ -29,7 +30,8 @@ int main(int argc, char *argv[]) {
       perror("failed to open file");
       return EXIT_FAILURE;
     }
-    if (cipher_encrypt(FINGERPRINT, INPUT, inputsz, ciphertext, GNUPGHOME) != SUCCESS) {
+    rc = cipher_encrypt(FINGERPRINT, INPUT, inputsz, ciphertext, GNUPGHOME);
+    if (rc != SUCCESS) {
       perror("failed to encrypt");
       fclose(ciphertext);
       remove(CIPHERTEXT);
@@ -53,7 +55,8 @@ int main(int argc, char *argv[]) {
       remove(CIPHERTEXT);
       return EXIT_FAILURE;
     }
-    if (cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME) != SUCCESS) {
+    rc = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
+    if (rc != SUCCESS) {
       perror("failed to decrypt");
       fclose(ciphertext);
       remove(CIPHERTEXT);
@@ -80,7 +83,5 @@ int main(int argc, char *argv[]) {
     output = NULL;
   }
 
-  if (strcmp(INPUT, buf) != 0) return EXIT_FAILURE;
-
-  return EXIT_SUCCESS;
+  return strcmp(INPUT, buf) != 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
