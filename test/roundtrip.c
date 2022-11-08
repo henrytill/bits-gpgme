@@ -13,7 +13,8 @@ enum {
 static const char *const CIPHERTEXT = "ciphertext.asc";
 static const char *const OUTPUT = "output.txt";
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   FILE *ciphertext = NULL;
   FILE *output = NULL;
   int rc;

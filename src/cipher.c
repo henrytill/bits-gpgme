@@ -34,7 +34,8 @@ enum {
 };
 
 /* https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html */
-static gpgme_error_t init(gpgme_protocol_t proto) {
+static gpgme_error_t init(gpgme_protocol_t proto)
+{
   gpgme_error_t err;
 
   setlocale(LC_ALL, "");
@@ -50,12 +51,14 @@ static gpgme_error_t init(gpgme_protocol_t proto) {
   return gpgme_engine_check_version(proto);
 }
 
-static void printerr(gpgme_error_t err, char *msg) {
+static void printerr(gpgme_error_t err, char *msg)
+{
   fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource(err), gpgme_strerror(err));
 }
 
 #ifdef PRINT_KEY
-static void printkey(gpgme_key_t key) {
+static void printkey(gpgme_key_t key)
+{
   printf("%s:", key->subkeys->keyid);
   if (key->uids && key->uids->name)
     printf(" %s", key->uids->name);
@@ -64,12 +67,14 @@ static void printkey(gpgme_key_t key) {
   putchar('\n');
 }
 #else
-static inline void printkey(gpgme_key_t key) {
+static inline void printkey(gpgme_key_t key)
+{
   (void)key;
 }
 #endif
 
-static int writedata(gpgme_data_t data, FILE *fp) {
+static int writedata(gpgme_data_t data, FILE *fp)
+{
   gpgme_off_t off;
   gpgme_error_t err;
   char buf[BUFSZ + 1];
@@ -90,7 +95,8 @@ static int writedata(gpgme_data_t data, FILE *fp) {
   return SUCCESS;
 }
 
-int cipher_encrypt(const char *fgpt, const char *input, size_t inputsz, FILE *fpout, const char *home) {
+int cipher_encrypt(const char *fgpt, const char *input, size_t inputsz, FILE *fpout, const char *home)
+{
   int ret = FAILURE;
   gpgme_error_t err;
   gpgme_ctx_t ctx = NULL;
@@ -161,7 +167,8 @@ out0:
   return ret;
 }
 
-int cipher_decrypt(const char *fgpt, FILE *fpin, FILE *fpout, const char *home) {
+int cipher_decrypt(const char *fgpt, FILE *fpin, FILE *fpout, const char *home)
+{
   int ret = FAILURE;
   gpgme_error_t err;
   gpgme_ctx_t ctx = NULL;
