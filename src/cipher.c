@@ -53,7 +53,8 @@ static gpgme_error_t init(gpgme_protocol_t proto)
 
 static void printerr(gpgme_error_t err, char *msg)
 {
-  fprintf(stderr, "%s: %s: %s\n", msg, gpgme_strsource(err), gpgme_strerror(err));
+  fprintf(stderr, "%s: %s: %s\n", msg,
+          gpgme_strsource(err), gpgme_strerror(err));
 }
 
 #ifdef PRINT_KEY
@@ -95,7 +96,8 @@ static int writedata(gpgme_data_t data, FILE *fp)
   return SUCCESS;
 }
 
-int cipher_encrypt(const char *fgpt, const char *input, size_t inputsz, FILE *fpout, const char *home)
+int cipher_encrypt(const char *fgpt, const char *input, size_t inputsz,
+                   FILE *fpout, const char *home)
 {
   int ret = FAILURE;
   gpgme_error_t err;
