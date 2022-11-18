@@ -16,7 +16,7 @@ include(UndefinedBehaviorSanitizer)
 string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 macro(SET_COMPILER_OPTIONS target)
-  target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wconversion -Wsign-conversion)
+  target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion)
 endmacro(SET_COMPILER_OPTIONS)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
