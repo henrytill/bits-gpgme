@@ -5,3 +5,4 @@ compile_commands.json
 /example/gnupg/*-migrated
 /example/gnupg/*gpg-agent*
 /example/gnupg/*.lock
+/Testing/
