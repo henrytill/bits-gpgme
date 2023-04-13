@@ -1,50 +1,64 @@
-from _cipher_cffi import ffi, lib
-import os
+from enum import IntEnum
+import tempfile
 import unittest
+from pathlib import Path
 
-GNUPGHOME = b"./example/gnupg"
-FINGERPRINT = b"74EF511A371C136C"
-INPUT = b"Hello, world!\n"
-CIPHERTEXT_FILE = "ciphertext.asc"
-OUTPUT_FILE = "output.txt"
+from _cipher_cffi import ffi, lib
 
-
-def cstr(bytestring: bytes):
-    return ffi.new("char[]", bytestring)
+GNUPGHOME = "./example/gnupg"
+FINGERPRINT = "74EF511A371C136C"
+INPUT = "Hello, world!\n"
 
 
-def encrypt(fingerprint: bytes, input: bytes, out_file: str, gnupghome: bytes):
+class Result(IntEnum):
+    SUCCESS = 0
+    FAILURE = 1
+
+
+def cstr(string: str):
+    return ffi.new("char[]", string.encode("ASCII"))
+
+
+def pathstr(path: Path):
+    return ffi.new("char[]", path.as_posix().encode("ASCII"))
+
+
+def encrypt(fingerprint: str, input: str, output_file: Path, gnupghome: Path) -> int:
     input_len = len(input)
-    with open(out_file, "wb") as output:
-        lib.cipher_encrypt(cstr(fingerprint), cstr(input), input_len, output, cstr(gnupghome))
+    with open(output_file, "wb") as output:
+        return lib.cipher_encrypt(cstr(fingerprint), cstr(input), input_len, output, pathstr(gnupghome))
 
 
-def decrypt(fingerprint: bytes, in_file: str, out_file: str, gnupghome: bytes):
-    with open(in_file, "rb") as input:
-        with open(out_file, "wb") as output:
-            lib.cipher_decrypt(cstr(fingerprint), input, output, cstr(gnupghome))
+def decrypt(fingerprint: str, input_file: Path, output_file: Path, gnupghome: Path) -> int:
+    with open(input_file, "rb") as input:
+        with open(output_file, "wb") as output:
+            return lib.cipher_decrypt(cstr(fingerprint), input, output, pathstr(gnupghome))
 
 
-def read(file: str):
+def read(file: Path) -> bytes:
     with open(file, "rb") as f:
-        data = f.readlines()
-    return data
+        return f.read()
 
 
-def roundtrip(fingerprint: bytes, input: bytes, gnupghome: bytes, ciphertext: str, output: str):
-    encrypt(fingerprint, input, ciphertext, gnupghome)
-    decrypt(fingerprint, ciphertext, output, gnupghome)
-    ret = read(output)
-    os.remove(ciphertext)
-    os.remove(output)
-    return ret
+def roundtrip(fingerprint: str, input: str, gnupghome: Path, ciphertext_file: Path, output_file: Path) -> str:
+    result = encrypt(fingerprint, input, ciphertext_file, gnupghome)
+    if result != Result.SUCCESS:
+        raise Exception("encrypt failed")
+    result = decrypt(fingerprint, ciphertext_file, output_file, gnupghome)
+    if result != Result.SUCCESS:
+        raise Exception("decrypt failed")
+    return read(output_file).decode("ASCII")
 
 
 class TestRoundtrip(unittest.TestCase):
     def test_roundtrip_success(self):
-        output = roundtrip(FINGERPRINT, INPUT, GNUPGHOME, CIPHERTEXT_FILE, OUTPUT_FILE)
-        self.assertEqual(output[0], INPUT, "should roundtrip")
+        with tempfile.NamedTemporaryFile(suffix=".asc", delete=True) as ciphertext:
+            with tempfile.NamedTemporaryFile(suffix=".txt", delete=True) as plaintext:
+                ciphertext_file = Path(ciphertext.name)
+                plaintext_file = Path(plaintext.name)
+                output: str = roundtrip(FINGERPRINT, INPUT, Path(GNUPGHOME), ciphertext_file, plaintext_file)
+                self.assertEqual(output, INPUT, "should roundtrip")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
