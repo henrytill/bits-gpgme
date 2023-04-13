@@ -1,0 +1,8 @@
+{
+    "cmake.configureOnOpen": true,
+    "python.formatting.provider": "black",
+    "black-formatter.args": [
+        "-l 120"
+    ],
+    "python.analysis.typeCheckingMode": "basic"
+}
