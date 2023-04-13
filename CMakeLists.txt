@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 enable_testing()
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(Platform)
 include(AddressSanitizer)
 include(UndefinedBehaviorSanitizer)
