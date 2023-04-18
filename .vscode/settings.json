@@ -2,7 +2,8 @@
     "cmake.configureOnOpen": true,
     "python.formatting.provider": "black",
     "black-formatter.args": [
-        "-l 120"
+        "-l 120",
+        "--skip-string-normalization"
     ],
     "python.analysis.typeCheckingMode": "basic"
 }
