@@ -1,10 +1,11 @@
 import re
 import sys
+from pathlib import Path
 
 from cffi import FFI
 
 
-def readhdr(path: str):
+def readhdr(path: Path) -> str:
     ret: str = ''
     with open(path) as file:
         for line in file:
@@ -13,10 +14,10 @@ def readhdr(path: str):
     return ret
 
 
-def main():
+def main() -> None:
     target = sys.argv[1]
     ffibuilder = FFI()
-    hdr = readhdr('../src/cipher.h')
+    hdr = readhdr(Path('../src/cipher.h'))
     ffibuilder.cdef(hdr)
     ffibuilder.set_source(
         '_cipher_cffi',
