@@ -1,6 +1,6 @@
-from enum import IntEnum
 import tempfile
 import unittest
+from enum import IntEnum
 from pathlib import Path
 
 from _cipher_cffi import ffi, lib

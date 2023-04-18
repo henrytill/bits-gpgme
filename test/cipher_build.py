@@ -1,6 +1,7 @@
-from cffi import FFI
 import re
 import sys
+
+from cffi import FFI
 
 
 def readhdr(path: str):
