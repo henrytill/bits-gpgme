@@ -1,0 +1,5 @@
+[tool.pyright]
+include = ["./test"]
+exclude = ["./src"]
+
+reportMissingImports = false
