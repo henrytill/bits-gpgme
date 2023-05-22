@@ -8,14 +8,11 @@
 static const char *const CIPHERTEXT = "ciphertext.asc";
 static const char *const OUTPUT = "output.txt";
 
-int main(int argc, char *argv[])
+int main(void)
 {
+    int rc;
     FILE *ciphertext = NULL;
     FILE *output = NULL;
-    int rc;
-
-    (void)argc;
-    (void)argv;
 
     const size_t input_size = strlen(INPUT);
     char buf[input_size + 1];

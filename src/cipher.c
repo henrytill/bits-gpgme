@@ -35,34 +35,34 @@ static const char *const FAILURE_MESSAGES[] = {
 #undef X
 };
 
-static void printerr(gpgme_error_t err, int i)
+static void print_error(gpgme_error_t error, int i)
 {
     fprintf(stderr, "%s: %s: %s\n", FAILURE_MESSAGES[i],
-            gpgme_strsource(err), gpgme_strerror(err));
+            gpgme_strsource(error), gpgme_strerror(error));
 }
 
 /* https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html */
 static gpgme_error_t init(gpgme_protocol_t proto)
 {
-    gpgme_error_t err;
+    gpgme_error_t error;
 
     setlocale(LC_ALL, "");
     gpgme_check_version(NULL);
-    err = gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
-    if (err != 0) {
-        return err;
+    error = gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
+    if (error != 0) {
+        return error;
     }
 #ifdef LC_MESSAGES
-    err = gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
-    if (err != 0) {
-        return err;
+    error = gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
+    if (error != 0) {
+        return error;
     }
 #endif
     return gpgme_engine_check_version(proto);
 }
 
 #ifdef PRINT_KEY
-static void printkey(gpgme_key_t key)
+static void print_key(gpgme_key_t key)
 {
     printf("%s:", key->subkeys->keyid);
     if (key->uids && key->uids->name) {
@@ -74,13 +74,13 @@ static void printkey(gpgme_key_t key)
     putchar('\n');
 }
 #else
-static inline void printkey(gpgme_key_t key)
+static inline void print_key(gpgme_key_t key)
 {
     (void)key;
 }
 #endif
 
-static int writedata(gpgme_data_t data, FILE *fp)
+static int write_data(gpgme_data_t data, FILE *fp)
 {
     gpgme_off_t off;
     gpgme_error_t error;
@@ -89,7 +89,7 @@ static int writedata(gpgme_data_t data, FILE *fp)
     off = gpgme_data_seek(data, 0, SEEK_SET);
     if (off != 0) {
         error = gpgme_error_from_errno((int)off);
-        printerr(error, FAILURE_SEEK);
+        print_error(error, FAILURE_SEEK);
         return -1;
     }
     while ((off = gpgme_data_read(data, buffer, BUFFER_SIZE)) > 0) {
@@ -97,7 +97,7 @@ static int writedata(gpgme_data_t data, FILE *fp)
     }
     if (off == -1) {
         error = gpgme_error_from_errno((int)off);
-        printerr(error, FAILURE_READ);
+        print_error(error, FAILURE_READ);
         return -1;
     }
     return 0;
@@ -108,69 +108,69 @@ int cipher_encrypt(const char *fingerprint, const char *input, size_t input_size
 {
     int ret = -1;
     gpgme_error_t error;
-    gpgme_ctx_t ctx = NULL;
-    gpgme_key_t key[] = {NULL, NULL};
-    gpgme_data_t in = NULL;
-    gpgme_data_t out = NULL;
 
     error = init(GPGME_PROTOCOL_OPENPGP);
     if (error != 0) {
-        printerr(error, FAILURE_INIT);
+        print_error(error, FAILURE_INIT);
         return -1;
     }
 
+    gpgme_ctx_t ctx = NULL;
     error = gpgme_new(&ctx);
     if (error != 0) {
-        printerr(error, FAILURE_NEW);
+        print_error(error, FAILURE_NEW);
         return -1;
     }
 
     error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home);
     if (error != 0) {
-        printerr(error, FAILURE_HOME);
-        goto out0;
+        print_error(error, FAILURE_HOME);
+        goto out_release_ctx;
     }
 
+    gpgme_key_t key[] = {NULL, NULL};
     error = gpgme_get_key(ctx, fingerprint, &key[0], true);
     if (error != 0) {
-        printerr(error, FAILURE_FETCH);
-        goto out0;
+        print_error(error, FAILURE_FETCH);
+        goto out_release_ctx;
     }
 
-    printkey(key[0]);
+    print_key(key[0]);
     gpgme_set_armor(ctx, true);
 
+    gpgme_data_t in = NULL;
     error = gpgme_data_new_from_mem(&in, input, input_size, true);
     if (error != 0) {
-        printerr(error, FAILURE_INPUT);
-        goto out1;
+        print_error(error, FAILURE_INPUT);
+        goto out_key_release_key;
     }
 
+    gpgme_data_t out = NULL;
     error = gpgme_data_new(&out);
     if (error != 0) {
-        printerr(error, FAILURE_OUTPUT);
-        goto out2;
+        print_error(error, FAILURE_OUTPUT);
+        goto out_data_release_in;
     }
 
     error = gpgme_op_encrypt(ctx, key, GPGME_ENCRYPT_ALWAYS_TRUST, in, out);
     if (error != 0) {
-        printerr(error, FAILURE_ENCRYPT);
-        goto out3;
+        print_error(error, FAILURE_ENCRYPT);
+        goto out_data_release_out;
     }
 
-    if (writedata(out, file_out) != 0) {
+    if (write_data(out, file_out) != 0) {
         perror(FAILURE_MESSAGES[FAILURE_WRITE]);
-        goto out3;
+        goto out_data_release_out;
     }
 
     ret = 0;
-out3:
+out_data_release_out:
     gpgme_data_release(out);
-out2:
+out_data_release_in:
     gpgme_data_release(in);
-out1:
+out_key_release_key:
     gpgme_key_release(key[0]);
-out0:
+out_release_ctx:
     gpgme_release(ctx);
     return ret;
 }
@@ -179,68 +179,68 @@ int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const
 {
     int ret = -1;
     gpgme_error_t error;
-    gpgme_ctx_t ctx = NULL;
-    gpgme_key_t key[] = {NULL, NULL};
-    gpgme_data_t in = NULL;
-    gpgme_data_t out = NULL;
 
     error = init(GPGME_PROTOCOL_OPENPGP);
     if (error != 0) {
-        printerr(error, FAILURE_INIT);
+        print_error(error, FAILURE_INIT);
         return -1;
     }
 
+    gpgme_ctx_t ctx = NULL;
     error = gpgme_new(&ctx);
     if (error != 0) {
-        printerr(error, FAILURE_NEW);
+        print_error(error, FAILURE_NEW);
         return -1;
     }
 
     error = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OPENPGP, NULL, home);
     if (error != 0) {
-        printerr(error, FAILURE_NEW);
-        goto out0;
+        print_error(error, FAILURE_NEW);
+        goto out_release_ctx;
     }
 
+    gpgme_key_t key[] = {NULL, NULL};
     error = gpgme_get_key(ctx, fingerprint, &key[0], true);
     if (error != 0) {
-        printerr(error, FAILURE_FETCH);
-        goto out0;
+        print_error(error, FAILURE_FETCH);
+        goto out_release_ctx;
     }
 
-    printkey(key[0]);
+    print_key(key[0]);
 
+    gpgme_data_t in = NULL;
     error = gpgme_data_new_from_stream(&in, file_in);
     if (error != 0) {
-        printerr(error, FAILURE_INPUT);
-        goto out1;
+        print_error(error, FAILURE_INPUT);
+        goto out_key_release_key;
     }
 
+    gpgme_data_t out = NULL;
     error = gpgme_data_new(&out);
     if (error != 0) {
-        printerr(error, FAILURE_OUTPUT);
-        goto out2;
+        print_error(error, FAILURE_OUTPUT);
+        goto out_data_release_in;
     }
 
     error = gpgme_op_decrypt(ctx, in, out);
     if (error != 0) {
-        printerr(error, FAILURE_DECRYPT);
-        goto out3;
+        print_error(error, FAILURE_DECRYPT);
+        goto out_data_release_out;
     }
 
-    if (writedata(out, file_out) != 0) {
+    if (write_data(out, file_out) != 0) {
         perror(FAILURE_MESSAGES[FAILURE_WRITE]);
-        goto out3;
+        goto out_data_release_out;
     }
 
     ret = 0;
-out3:
+out_data_release_out:
     gpgme_data_release(out);
-out2:
+out_data_release_in:
     gpgme_data_release(in);
-out1:
+out_key_release_key:
     gpgme_key_release(key[0]);
-out0:
+out_release_ctx:
     gpgme_release(ctx);
     return ret;
 }
