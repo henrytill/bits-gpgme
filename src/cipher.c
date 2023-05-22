@@ -40,12 +40,14 @@ static gpgme_error_t init(gpgme_protocol_t proto) {
   setlocale(LC_ALL, "");
   gpgme_check_version(NULL);
   err = gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
-  if (err != SUCCESS)
+  if (err != SUCCESS) {
     return err;
+  }
 #ifdef LC_MESSAGES
   err = gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
-  if (err != SUCCESS)
+  if (err != SUCCESS) {
     return err;
+  }
 #endif
   return gpgme_engine_check_version(proto);
 }
@@ -58,10 +60,12 @@ static void printerr(gpgme_error_t err, char *msg) {
 #ifdef PRINT_KEY
 static void printkey(gpgme_key_t key) {
   printf("%s:", key->subkeys->keyid);
-  if (key->uids && key->uids->name)
+  if (key->uids && key->uids->name) {
     printf(" %s", key->uids->name);
-  if (key->uids && (strcmp(key->uids->email, "") != 0))
+  }
+  if (key->uids && (strcmp(key->uids->email, "") != 0)) {
     printf(" <%s>", key->uids->email);
+  }
   putchar('\n');
 }
 #else
@@ -81,8 +85,9 @@ static int writedata(gpgme_data_t data, FILE *fp) {
     printerr(err, FAILSEEK);
     return FAILURE;
   }
-  while ((off = gpgme_data_read(data, buf, BUFSZ)) > 0)
+  while ((off = gpgme_data_read(data, buf, BUFSZ)) > 0) {
     fwrite(buf, (size_t)off, 1, fp);
+  }
   if (off == -1) {
     err = gpgme_error_from_errno((int)off);
     printerr(err, FAILREAD);

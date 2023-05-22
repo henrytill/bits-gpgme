@@ -77,7 +77,9 @@ int main(int argc, char *argv[]) {
       remove(OUTPUT);
       return EXIT_FAILURE;
     }
-    while (fgets(buf, (int)sizeof buf, output) != NULL) continue;
+    while (fgets(buf, (int)sizeof buf, output) != NULL) {
+      // continue;
+    }
     fclose(output);
     remove(OUTPUT);
     output = NULL;
