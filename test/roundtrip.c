@@ -5,11 +5,6 @@
 #include "cipher.h"
 #include "data.h"
 
-enum {
-  SUCCESS = 0,
-  FAILURE = 1,
-};
-
 static const char *const CIPHERTEXT = "ciphertext.asc";
 static const char *const OUTPUT = "output.txt";
 
@@ -21,8 +16,8 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  const size_t inputsz = strlen(INPUT);
-  char buf[inputsz + 1];
+  const size_t input_size = strlen(INPUT);
+  char buf[input_size + 1];
 
   {
     ciphertext = fopen(CIPHERTEXT, "wb");
@@ -30,8 +25,8 @@ int main(int argc, char *argv[]) {
       perror("failed to open file");
       return EXIT_FAILURE;
     }
-    rc = cipher_encrypt(FINGERPRINT, INPUT, inputsz, ciphertext, GNUPGHOME);
-    if (rc != SUCCESS) {
+    rc = cipher_encrypt(FINGERPRINT, INPUT, input_size, ciphertext, GNUPGHOME);
+    if (rc != 0) {
       perror("failed to encrypt");
       fclose(ciphertext);
       remove(CIPHERTEXT);
@@ -56,7 +51,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     rc = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
-    if (rc != SUCCESS) {
+    if (rc != 0) {
       perror("failed to decrypt");
       fclose(ciphertext);
       remove(CIPHERTEXT);

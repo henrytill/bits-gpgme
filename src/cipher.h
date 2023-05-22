@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
-int cipher_encrypt(const char *fgpt, const char *input, size_t inputsz, FILE *fpout, const char *home);
+int cipher_encrypt(const char *fingerprint, const char *input, size_t input_size, FILE *file_out, const char *home);
 
-int cipher_decrypt(const char *fgpt, FILE *fpin, FILE *fpout, const char *home);
+int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const char *home);
 
 #endif /* GPGME_BITS_CIPHER_H */
