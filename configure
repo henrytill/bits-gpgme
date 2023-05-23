@@ -5,6 +5,6 @@ BUILD_DIR=${1:-build}
 mkdir -pv $BUILD_DIR
 
 ln -frsv ./GNUmakefile $BUILD_DIR
-ln -frsv ./example     $BUILD_DIR
-ln -frsv ./src         $BUILD_DIR
-ln -frsv ./test        $BUILD_DIR
+ln -frsv ./example $BUILD_DIR
+ln -frsv ./src $BUILD_DIR
+ln -frsv ./test $BUILD_DIR
