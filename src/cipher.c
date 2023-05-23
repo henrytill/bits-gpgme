@@ -2,12 +2,16 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#ifdef PRINT_KEY
+#include <string.h>
+#endif
+
 #include <gpgme.h>
 
 #include "cipher.h"
 
 enum {
-    BUFFER_SIZE = 512, /* Size of buffer for printing data */
+    BUFFER_SIZE = 512, // Size of buffer for printing data
 };
 
 #define FAILURES                              \
@@ -37,27 +41,37 @@ static const char *const FAILURE_MESSAGES[] = {
 
 static void print_error(gpgme_error_t error, int i)
 {
-    fprintf(stderr, "%s: %s: %s\n", FAILURE_MESSAGES[i],
-            gpgme_strsource(error), gpgme_strerror(error));
+    (void)fprintf(stderr, "%s: %s: %s\n", FAILURE_MESSAGES[i],
+                  gpgme_strsource(error), gpgme_strerror(error));
 }
 
-/* https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html */
+#ifdef LC_MESSAGES
+static gpgme_error_t set_locale_lc_messages(void)
+{
+    return gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
+}
+#else
+static inline gpgme_error_t set_locale_lc_messages(void)
+{
+    return 0;
+}
+#endif
+
+// https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
 static gpgme_error_t init(gpgme_protocol_t proto)
 {
     gpgme_error_t error;
 
-    setlocale(LC_ALL, "");
+    (void)setlocale(LC_ALL, "");
     gpgme_check_version(NULL);
     error = gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
     if (error != 0) {
         return error;
     }
-#ifdef LC_MESSAGES
-    error = gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
+    error = set_locale_lc_messages();
     if (error != 0) {
         return error;
     }
-#endif
     return gpgme_engine_check_version(proto);
 }
 
@@ -74,9 +88,8 @@ static void print_key(gpgme_key_t key)
     putchar('\n');
 }
 #else
-static inline void print_key(gpgme_key_t key)
+static inline void print_key(__attribute__((unused)) gpgme_key_t key)
 {
-    (void)key;
 }
 #endif
 
@@ -93,7 +106,7 @@ static int write_data(gpgme_data_t data, FILE *fp)
         return -1;
     }
     while ((off = gpgme_data_read(data, buffer, BUFFER_SIZE)) > 0) {
-        fwrite(buffer, (size_t)off, 1, fp);
+        (void)fwrite(buffer, (size_t)off, 1, fp);
     }
     if (off == -1) {
         error = gpgme_error_from_errno((int)off);
@@ -175,7 +188,8 @@ out_release_ctx:
     return ret;
 }
 
-int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const char *home)
+int cipher_decrypt(const char *fingerprint, FILE *file_in,
+                   FILE *file_out, const char *home)
 {
     int ret = -1;
     gpgme_error_t error;

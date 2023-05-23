@@ -3,10 +3,7 @@
 #include "cipher.h"
 #include "data.h"
 
-int main(int argc, char *argv[])
+int main(void)
 {
-    (void)argc;
-    (void)argv;
-
     return cipher_decrypt(FINGERPRINT, stdin, stdout, NULL);
 }

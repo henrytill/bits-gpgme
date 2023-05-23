@@ -26,11 +26,11 @@ int main(void)
         rc = cipher_encrypt(FINGERPRINT, INPUT, input_size, ciphertext, GNUPGHOME);
         if (rc != 0) {
             perror("failed to encrypt");
-            fclose(ciphertext);
-            remove(CIPHERTEXT);
+            (void)fclose(ciphertext);
+            (void)remove(CIPHERTEXT);
             return EXIT_FAILURE;
         }
-        fclose(ciphertext);
+        (void)fclose(ciphertext);
         ciphertext = NULL;
     }
 
@@ -38,27 +38,27 @@ int main(void)
         ciphertext = fopen(CIPHERTEXT, "r");
         if (ciphertext == NULL) {
             perror("failed to open file");
-            remove(CIPHERTEXT);
+            (void)remove(CIPHERTEXT);
             return EXIT_FAILURE;
         }
         output = fopen(OUTPUT, "wb");
         if (output == NULL) {
             perror("failed to open file");
-            fclose(ciphertext);
-            remove(CIPHERTEXT);
+            (void)fclose(ciphertext);
+            (void)remove(CIPHERTEXT);
             return EXIT_FAILURE;
         }
         rc = cipher_decrypt(FINGERPRINT, ciphertext, output, GNUPGHOME);
         if (rc != 0) {
             perror("failed to decrypt");
-            fclose(ciphertext);
-            remove(CIPHERTEXT);
-            fclose(output);
-            remove(OUTPUT);
+            (void)fclose(ciphertext);
+            (void)remove(CIPHERTEXT);
+            (void)fclose(output);
+            (void)remove(OUTPUT);
         }
-        fclose(ciphertext);
-        remove(CIPHERTEXT);
-        fclose(output);
+        (void)fclose(ciphertext);
+        (void)remove(CIPHERTEXT);
+        (void)fclose(output);
         ciphertext = NULL;
         output = NULL;
     }
@@ -67,14 +67,14 @@ int main(void)
         output = fopen(OUTPUT, "r");
         if (output == NULL) {
             perror("failed to open file");
-            remove(OUTPUT);
+            (void)remove(OUTPUT);
             return EXIT_FAILURE;
         }
         while (fgets(buf, (int)sizeof buf, output) != NULL) {
             // continue;
         }
-        fclose(output);
-        remove(OUTPUT);
+        (void)fclose(output);
+        (void)remove(OUTPUT);
         output = NULL;
     }
 
