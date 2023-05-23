@@ -1,4 +1,10 @@
-/*build*/
+/build/
+/**/*.o
+/**/*.so
+/**/roundtrip
+/**/_cipher_cffi.c
+/**/encrypt
+/**/decrypt
 compile_commands.json
 /example/gnupg/private-keys-v1.d
 /example/gnupg/random_seed

@@ -17,18 +17,18 @@ def readhdr(path: Path) -> str:
 def main() -> None:
     target = sys.argv[1]
     ffibuilder = FFI()
-    hdr = readhdr(Path('../src/cipher.h'))
+    hdr = readhdr(Path('./src/cipher.h'))
     ffibuilder.cdef(hdr)
     ffibuilder.set_source(
         '_cipher_cffi',
         '''
         #include "cipher.h"
         ''',
-        include_dirs=['../src'],
-        library_dirs=['./src'],
+        include_dirs=['./src'],
+        library_dirs=['./.'],
         libraries=['cipher'],
     )
-    ffibuilder.compile(target=target, verbose=True)
+    ffibuilder.compile(target=target, verbose=False)
 
 
 if __name__ == '__main__':
