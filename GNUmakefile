@@ -25,17 +25,18 @@ cipher.o: CFLAGS += -fPIC -DPRINT_KEY
 cipher.o: cipher.c cipher.h
 
 libcipher.so: LDFLAGS += -Wl,-soname,libcipher.so
-libcipher.so: cipher.o -lgpgme
+libcipher.so: LDLIBS += -lgpgme
+libcipher.so: cipher.o
 
-encrypt: encrypt.c -lcipher
+encrypt: encrypt.c libcipher.so
 
-decrypt: decrypt.c -lcipher
+decrypt: decrypt.c libcipher.so
 
 roundtrip: CFLAGS += -Isrc
-roundtrip: roundtrip.c -lcipher
+roundtrip: roundtrip.c libcipher.so
 
 lib%.so: %.o
-	$(CC) -fPIC -shared $(LDFLAGS) -o $@ $^
+	$(CC) -fPIC -shared $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 _cipher_cffi.so: libcipher.so
 	python3 test/cipher_build.py $@
