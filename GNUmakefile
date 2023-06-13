@@ -6,13 +6,23 @@ LDFLAGS =
 
 VPATH = src:test
 
+PRINT_KEY = 1
+
+ifeq ($(PRINT_KEY),1)
+CFLAGS += -DPRINT_KEY
+endif
+
 BIN =\
 	decrypt \
 	encrypt \
 	roundtrip
 
+GEN =\
+	_cipher_cffi.c
+
 OBJ =\
-	cipher.o
+	cipher.o \
+	_cipher_cffi.o
 
 LIB =\
 	libcipher.so \
@@ -48,4 +58,4 @@ check test: roundtrip _cipher_cffi.so
 
 .PHONY: clean
 clean:
-	rm -f $(BIN) $(OBJ) $(LIB)
+	rm -f $(BIN) $(OBJ) $(LIB) $(GEN)
