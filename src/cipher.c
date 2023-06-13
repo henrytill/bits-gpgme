@@ -116,7 +116,7 @@ static int write_data(gpgme_data_t data, FILE *fp)
 	return 0;
 }
 
-int cipher_encrypt(const char *fingerprint, const char *input, size_t input_size,
+int cipher_encrypt(const char *fingerprint, const char *input, const size_t input_len,
 	FILE *file_out, const char *home)
 {
 	int ret = -1;
@@ -152,7 +152,7 @@ int cipher_encrypt(const char *fingerprint, const char *input, size_t input_size
 	gpgme_set_armor(ctx, true);
 
 	gpgme_data_t in = NULL;
-	error = gpgme_data_new_from_mem(&in, input, input_size, true);
+	error = gpgme_data_new_from_mem(&in, input, input_len, true);
 	if (error != 0) {
 		print_error(error, FAILURE_INPUT);
 		goto out_key_release_key;
@@ -188,8 +188,7 @@ out_release_ctx:
 	return ret;
 }
 
-int cipher_decrypt(const char *fingerprint, FILE *file_in,
-	FILE *file_out, const char *home)
+int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const char *home)
 {
 	int ret = -1;
 	gpgme_error_t error;
