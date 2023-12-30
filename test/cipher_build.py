@@ -21,9 +21,9 @@ def main() -> None:
     ffibuilder.cdef(hdr)
     ffibuilder.set_source(
         '_cipher_cffi',
-        '''
+        """
         #include "cipher.h"
-        ''',
+        """,
         include_dirs=['./src'],
         library_dirs=['./.'],
         libraries=['cipher'],
