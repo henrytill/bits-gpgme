@@ -5,7 +5,7 @@
 #include "data.h"
 
 int main(void) {
-  const size_t input_len = strlen(INPUT);
+    const size_t input_len = strlen(INPUT);
 
-  return cipher_encrypt(FINGERPRINT, INPUT, input_len, stdout, NULL);
+    return cipher_encrypt(FINGERPRINT, INPUT, input_len, stdout, NULL);
 }
