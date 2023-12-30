@@ -11,7 +11,7 @@
 #include "cipher.h"
 
 enum {
-  BUFFER_SIZE = 512, // Size of buffer for printing data
+  BUFFER_SIZE = 512, // Size of buffer used by write_data
 };
 
 #define FAILURES                            \
@@ -83,8 +83,7 @@ static void print_key(gpgme_key_t key) {
   putchar('\n');
 }
 #else
-static inline void print_key(__attribute__((unused)) gpgme_key_t key) {
-}
+static inline void print_key(__attribute__((unused)) gpgme_key_t key) {}
 #endif
 
 static int write_data(gpgme_data_t data, FILE *fp) {
