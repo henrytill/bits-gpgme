@@ -48,7 +48,7 @@ roundtrip: roundtrip.c libcipher.so
 lib%.so: %.o
 	$(CC) -fPIC -shared $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-_cipher_cffi.so: libcipher.so
+_cipher_cffi.so: libcipher.so cipher_build.py
 	python3 test/cipher_build.py $@
 
 .PHONY: check test
