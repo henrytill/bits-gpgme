@@ -39,23 +39,27 @@ static const char *const FAILURE_MESSAGES[] = {
 #undef X
 };
 
-static void print_error(gpgme_error_t error, int i) {
+static void print_error(gpgme_error_t error, int i)
+{
     (void)fprintf(stderr, "%s: %s: %s\n", FAILURE_MESSAGES[i],
                   gpgme_strsource(error), gpgme_strerror(error));
 }
 
 #ifdef LC_MESSAGES
-static gpgme_error_t set_locale_lc_messages(void) {
+static gpgme_error_t set_locale_lc_messages(void)
+{
     return gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
 }
 #else
-static inline gpgme_error_t set_locale_lc_messages(void) {
+static inline gpgme_error_t set_locale_lc_messages(void)
+{
     return 0;
 }
 #endif
 
 // https://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html
-static gpgme_error_t init(gpgme_protocol_t proto) {
+static gpgme_error_t init(gpgme_protocol_t proto)
+{
     gpgme_error_t error;
 
     (void)setlocale(LC_ALL, "");
@@ -72,7 +76,8 @@ static gpgme_error_t init(gpgme_protocol_t proto) {
 }
 
 #ifdef PRINT_KEY
-static void print_key(gpgme_key_t key) {
+static void print_key(gpgme_key_t key)
+{
     printf("%s:", key->subkeys->keyid);
     if (key->uids && key->uids->name) {
         printf(" %s", key->uids->name);
@@ -83,10 +88,13 @@ static void print_key(gpgme_key_t key) {
     putchar('\n');
 }
 #else
-static inline void print_key(__attribute__((unused)) gpgme_key_t key) {}
+static inline void print_key(__attribute__((unused)) gpgme_key_t key)
+{
+}
 #endif
 
-static int write_data(gpgme_data_t data, FILE *fp) {
+static int write_data(gpgme_data_t data, FILE *fp)
+{
     gpgme_off_t off;
     gpgme_error_t error;
     char buffer[BUFFER_SIZE + 1];
@@ -109,7 +117,8 @@ static int write_data(gpgme_data_t data, FILE *fp) {
 }
 
 int cipher_encrypt(const char *fingerprint, const char *input, const size_t input_len,
-                   FILE *file_out, const char *home) {
+                   FILE *file_out, const char *home)
+{
     int ret = -1;
     gpgme_error_t error;
 
@@ -179,7 +188,8 @@ out_release_ctx:
     return ret;
 }
 
-int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const char *home) {
+int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const char *home)
+{
     int ret = -1;
     gpgme_error_t error;
 

@@ -8,7 +8,8 @@
 static const char *const CIPHERTEXT = "ciphertext.asc";
 static const char *const OUTPUT = "output.txt";
 
-int main(void) {
+int main(void)
+{
     int rc;
     FILE *ciphertext = NULL;
     FILE *output = NULL;
