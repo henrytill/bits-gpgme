@@ -1,3 +1,5 @@
+#include "cipher.h"
+
 #include <locale.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -7,8 +9,6 @@
 #endif
 
 #include <gpgme.h>
-
-#include "cipher.h"
 
 enum {
     BUFFER_SIZE = 512, // Size of buffer used by write_data
