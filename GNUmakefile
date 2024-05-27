@@ -28,6 +28,8 @@ LIB =\
 	libcipher.so \
 	_cipher_cffi.so
 
+-include config.mk
+
 .PHONY: all
 all: $(LIB) $(BIN)
 
