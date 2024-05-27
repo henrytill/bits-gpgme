@@ -14,35 +14,40 @@ enum {
     BUFFER_SIZE = 512, // Size of buffer used by write_data
 };
 
-#define FAILURES                              \
-    X(INIT, "failed to initialize engine")    \
-    X(NEW, "failed to create context")        \
-    X(HOME, "failed to set homedir")          \
-    X(FETCH, "failed to fetch key")           \
-    X(INPUT, "failed to create input data")   \
-    X(OUTPUT, "failed to create output data") \
-    X(ENCRYPT, "failed to encrypt")           \
-    X(DECRYPT, "failed to decrypt")           \
-    X(WRITE, "failed to write")               \
-    X(SEEK, "failed to seek")                 \
-    X(READ, "failed to read")
-
-enum {
-#define X(variant, str) FAILURE_##variant,
-    FAILURES
-#undef X
+enum failure {
+    FAILURE_INIT,
+    FAILURE_NEW,
+    FAILURE_HOME,
+    FAILURE_FETCH,
+    FAILURE_INPUT,
+    FAILURE_OUTPUT,
+    FAILURE_ENCRYPT,
+    FAILURE_DECRYPT,
+    FAILURE_WRITE,
+    FAILURE_SEEK,
+    FAILURE_READ,
+    FAILURE_MAX,
 };
 
 static const char *const FAILURE_MESSAGES[] = {
-#define X(variant, str) [FAILURE_##variant] = (str),
-    FAILURES
-#undef X
+    [FAILURE_INIT] = "failed to initialize engine",
+    [FAILURE_NEW] = "failed to create context",
+    [FAILURE_HOME] = "failed to set homedir",
+    [FAILURE_FETCH] = "failed to fetch key",
+    [FAILURE_INPUT] = "failed to create input data",
+    [FAILURE_OUTPUT] = "failed to create output data",
+    [FAILURE_ENCRYPT] = "failed to encrypt",
+    [FAILURE_DECRYPT] = "failed to decrypt",
+    [FAILURE_WRITE] = "failed to write",
+    [FAILURE_SEEK] = "failed to seek",
+    [FAILURE_READ] = "failed to read",
+    [FAILURE_MAX] = NULL,
 };
 
-static void print_error(gpgme_error_t error, int i)
+static void print_error(gpgme_error_t error, enum failure f)
 {
-    (void)fprintf(stderr, "%s: %s: %s\n", FAILURE_MESSAGES[i],
-                  gpgme_strsource(error), gpgme_strerror(error));
+    (void)printf("%s: %s: %s\n", FAILURE_MESSAGES[f],
+                 gpgme_strsource(error), gpgme_strerror(error));
 }
 
 #ifdef LC_MESSAGES
