@@ -45,7 +45,8 @@ encrypt: encrypt.c libcipher.so
 decrypt: decrypt.c libcipher.so
 
 roundtrip: CFLAGS += -Isrc
-roundtrip: roundtrip.c libcipher.so
+roundtrip: LDLIBS += -lgpgme
+roundtrip: roundtrip.c cipher.o
 
 lib%.so: %.o
 	$(CC) -fPIC -shared $(LDFLAGS) $^ $(LDLIBS) -o $@
