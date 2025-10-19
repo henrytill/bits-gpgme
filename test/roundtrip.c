@@ -5,15 +5,15 @@
 #include "cipher.h"
 #include "data.h"
 
-static const char *const CIPHERTEXT = "ciphertext.asc";
-static const char *const OUTPUT = "output.txt";
+static char const *const CIPHERTEXT = "ciphertext.asc";
+static char const *const OUTPUT = "output.txt";
 
 int main(void) {
   int rc;
   FILE *ciphertext = NULL;
   FILE *output = NULL;
 
-  const size_t input_size = strlen(INPUT);
+  size_t const input_size = strlen(INPUT);
   char buf[input_size + 1];
 
   {

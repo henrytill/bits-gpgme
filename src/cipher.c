@@ -29,7 +29,7 @@ enum failure {
   FAILURE_MAX,
 };
 
-static const char *const FAILURE_MESSAGES[] = {
+static char const *const FAILURE_MESSAGES[] = {
   [FAILURE_INIT] = "failed to initialize engine",
   [FAILURE_NEW] = "failed to create context",
   [FAILURE_HOME] = "failed to set homedir",
@@ -45,8 +45,7 @@ static const char *const FAILURE_MESSAGES[] = {
 };
 
 static void print_error(gpgme_error_t error, enum failure f) {
-  (void)printf("%s: %s: %s\n", FAILURE_MESSAGES[f],
-               gpgme_strsource(error), gpgme_strerror(error));
+  (void)printf("%s: %s: %s\n", FAILURE_MESSAGES[f], gpgme_strsource(error), gpgme_strerror(error));
 }
 
 #ifdef LC_MESSAGES
@@ -114,8 +113,13 @@ static int write_data(gpgme_data_t data, FILE *fp) {
   return 0;
 }
 
-int cipher_encrypt(const char *fingerprint, const char *input, const size_t input_len,
-                   FILE *file_out, const char *home) {
+int cipher_encrypt(
+  char const *fingerprint,
+  char const *input,
+  size_t const input_len,
+  FILE *file_out,
+  char const *home
+) {
   int ret = -1;
   gpgme_error_t error;
 
@@ -185,7 +189,12 @@ out_release_ctx:
   return ret;
 }
 
-int cipher_decrypt(const char *fingerprint, FILE *file_in, FILE *file_out, const char *home) {
+int cipher_decrypt(
+  char const *fingerprint,
+  FILE *file_in,
+  FILE *file_out,
+  char const *home
+) {
   int ret = -1;
   gpgme_error_t error;
 

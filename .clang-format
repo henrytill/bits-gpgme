@@ -20,14 +20,20 @@ ContinuationIndentWidth: 2
 DerivePointerAlignment: false
 FixNamespaceComments: true
 IndentCaseLabels: false
-IndentCaseBlocks: true
+IndentCaseBlocks: false
 IndentPPDirectives: AfterHash
 IndentWidth: 2
 ObjCBlockIndentWidth: 2
 PointerAlignment: Right
+QualifierAlignment: Right
 ReflowComments: true
 SortIncludes: true
 SpacesBeforeTrailingComments: 1
 
 # This does horrible things to nested designated initializers when set
 AlignArrayOfStructures: None
+
+# Rustish multi-line arguments and parameters
+BinPackArguments: false
+BinPackParameters: false
+AlignAfterOpenBracket: BlockIndent
